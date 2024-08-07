@@ -285,7 +285,7 @@ class StudentForm(forms.ModelForm):
             'first_name', 'middle_name', 'last_name', 'current_class', 'date_of_birth',
             'gender', 'first_phone_number', 'second_phone_number', 'fee_payer_number',
             'address', 'profile_pic', 'examination_number', 'previously_examination_number',
-            'physical_disabilities_condition', 'branch', 'services'
+            'physical_disabilities_condition', 'branch', 'service'
         ]
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -303,7 +303,7 @@ class StudentForm(forms.ModelForm):
             'previously_examination_number': forms.TextInput(attrs={'class': 'form-control'}),
             'physical_disabilities_condition': forms.TextInput(attrs={'class': 'form-control'}),
             'branch': forms.Select(attrs={'class': 'form-control select2bs4'}),
-            'services': forms.SelectMultiple(attrs={'class': 'form-control select2bs4'}),
+            'service': forms.SelectMultiple(attrs={'class': 'form-control select2bs4'}),
         }
 
     def __init__(self, *args, **kwargs):

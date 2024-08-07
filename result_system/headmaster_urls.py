@@ -1,6 +1,8 @@
 
 from django.urls import   path
-from result_module import ExcelTemplate, HeadmasterViews, Delete, imports
+
+from result_module import ExcelTemplate, HeadmasterViews, imports, Delete
+
 
 urlpatterns = [       
         path('admin_get_class_student_attendance_data/',HeadmasterViews.admin_get_class_student_attendance_data, name="admin_get_class_student_attendance_data"),
