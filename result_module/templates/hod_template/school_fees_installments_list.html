@@ -1,0 +1,56 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block title %}
+School Fees Installments  
+{% endblock title %}
+
+{% block breadcrumb %}
+{% include "hod_template/modal_form.html" %}
+{% endblock breadcrumb %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6  class="header-title text-center mt-0 mb-1  text-uppercase">School Fees Installments list</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm" id="example">
+                            <thead>
+                                <tr>                                
+                                    <th>ID</th>
+                                    <th>Installment Name</th>
+                                    <th>Amount Required</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Class</th>                            
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for installment in installments %}
+                                <tr>                             
+                                    <td>{{ installment.id }}</td>
+                                    <td>{{ installment.installment_name }}</td>
+                                    <td>{{ installment.amount_required }}</td>
+                                    <td>{{ installment.start_date }}</td>
+                                    <td>{{ installment.end_date }}</td>
+                                    <td>{{ installment.school_class }}</td>
+                                   
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+             
+        </div>
+    </div>
+</div>
+
+
+{% include 'hod_template/datatable.html' %}
+{% endblock main_content %}

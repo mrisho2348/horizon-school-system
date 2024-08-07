@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <!-- Add your stylesheets here -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .error-container {
+            text-align: center;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .error-container h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .error-container p {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .error-container a {
+            text-decoration: none;
+            color: #007bff;
+        }
+        .error-container a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>Error</h1>
+        <p>{{ error_message }}</p>
+        <a href="{% url 'admin_home' %}">Go back to Home</a>
+    </div>
+</body>
+</html>

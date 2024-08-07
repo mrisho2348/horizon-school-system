@@ -1,0 +1,311 @@
+{% extends 'accountant_template/base_template.html' %}
+
+{% block title %}
+Expenditure Details
+{% endblock title %}
+
+{% block breadcrumb %}
+{% include "accountant_template/modal_form.html" %}
+<a class="btn btn-primary float-right" type="button" data-toggle="modal" data-target="#addExpenditureModal">
+    <i class="fas fa-plus"></i> New Expenditure
+</a>
+{% endblock breadcrumb %}
+
+{% load static %}
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6  class="header-title text-center mt-0 mb-1  text-uppercase">Expenditure Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm  display" id="example"  style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for expenditure in expenditures %}
+                                <tr>
+                                    <td>{{ expenditure.description }}</td>
+                                    <td>{{ expenditure.amount }}</td>
+                                    <td>{{ expenditure.date }}</td>
+                                    <td>{{ expenditure.category }}</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-dark btn-sm" data-toggle="modal" data-target="#editExpenditureModal{{ expenditure.id }}"  data-toggle="tooltip" title="Edit">
+                                            <i class="fa fa-edit text-white"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteExpenditureModal{{ expenditure.id }}"  data-toggle="tooltip" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>  
+                                       
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for expenditure in expenditures %}
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="editExpenditureModal{{ expenditure.id }}" tabindex="-1" aria-labelledby="editExpenditureModalLabel{{ expenditure.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editExpenditureModalLabel{{ expenditure.id }}">Edit Expenditure</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Form for editing Expenditure -->
+                <form id="editExpenditureForm{{ expenditure.id }}" data-expenditure-id="{{ expenditure.id }}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="edit_description{{ expenditure.id }}" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="edit_description{{ expenditure.id }}" name="description" value="{{ expenditure.description }}" required>
+                        <input type="hidden" class="form-control" id="expenditure_id{{ expenditure.id }}" name="expenditure_id" value="{{ expenditure.id }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_amount{{ expenditure.id }}" class="form-label">Amount</label>
+                        <input type="number" class="form-control" id="edit_amount{{ expenditure.id }}" name="amount" step="0.01" value="{{ expenditure.amount }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_date{{ expenditure.id }}" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="edit_date{{ expenditure.id }}" name="date" value="{{ expenditure.date|date:'Y-m-d' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_category{{ expenditure.id }}" class="form-label">Category</label>
+                        <select class="form-control select2bs4" style="width: 100%;" id="edit_category{{ expenditure.id }}" name="category" required>
+                            <option value="Salary" {% if expenditure.category == 'Salary' %} selected {% endif %}>Salary</option>
+                            <option value="Utilities" {% if expenditure.category == 'Utilities' %} selected {% endif %}>Utilities</option>
+                            <option value="Supplies" {% if expenditure.category == 'Supplies' %} selected {% endif %}>Supplies</option>
+                            <option value="Maintenance" {% if expenditure.category == 'Maintenance' %} selected {% endif %}>Maintenance</option>
+                            <option value="Other" {% if expenditure.category == 'Other' %} selected {% endif %}>Other</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Update Expenditure</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+
+{% for expenditure in expenditures %}
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="deleteExpenditureModal{{ expenditure.id }}" tabindex="-1" aria-labelledby="deleteExpenditureModalLabel{{ expenditure.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteExpenditureModalLabel{{ expenditure.id }}">Delete Expenditure</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete expenditure: <strong>{{ expenditure.description }}</strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form id="deleteExpenditureForm{{ expenditure.id }}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="expenditure_id" value="{{ expenditure.id }}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle form submission for each delete form
+        {% for expenditure in expenditures %}
+        document.getElementById('deleteExpenditureForm{{ expenditure.id }}').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+            
+            var form = this;
+            var formData = new FormData(form);
+            formData.append('expenditure_id', '{{ expenditure.id }}'); // Append expenditure id to form data
+            
+            // Send form data to server using AJAX
+            $.ajax({
+                url: '{% url "accountant_delete_expenditure" %}',  // URL for delete expenditure view
+                method: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,  // Prevent jQuery from automatically processing the FormData object
+                success: function (response) {
+                    // Check if success is true or false
+                    if (response.success) {
+                      location.reload(true)
+                        // Optionally, update UI or perform other actions
+                    } else {
+                        alert('Failed to add expenditure: ' + response.error);
+                        // Optionally, handle error or perform other actions
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // Handle error response
+                    alert('Error deleting expenditure: ' + error);
+                    // Optionally, display error message or perform other actions
+                }
+            });
+        });
+        {% endfor %}
+    });
+</script>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle form submission for each edit form
+        {% for expenditure in expenditures %}
+        document.getElementById('editExpenditureForm{{ expenditure.id }}').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+            
+            // Get expenditure ID from form data attribute
+            var expenditureId = this.getAttribute('data-expenditure-id');
+            
+            // Create FormData object to serialize form data
+            var formData = new FormData(this);
+
+            // Convert FormData to JSON object
+            var jsonFormData = {};
+            formData.forEach(function(value, key){
+                jsonFormData[key] = value;
+            });
+
+            // Send form data to server using AJAX
+            $.ajax({
+                url: '{% url "accountant_add_expenditure_view" %}',  // Replace with your server endpoint URL for updating expenditure
+                method: 'POST',
+                data: JSON.stringify(jsonFormData),
+                contentType: 'application/json',
+                processData: false,  // Prevent jQuery from automatically processing the FormData object
+                success: function (response) {
+                    // Check if success is true or false
+                    if (response.success) {
+                      location.reload(true)
+                        // Optionally, update UI or perform other actions
+                    } else {
+                        alert('Failed to add expenditure: ' + response.error);
+                        // Optionally, handle error or perform other actions
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // Handle error response
+                    alert('Error updating expenditure: ' + error);
+                    // Optionally, display error message or perform other actions
+                }
+            });
+        });
+        {% endfor %}
+    });
+</script>
+
+
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="addExpenditureModal" tabindex="-1" aria-labelledby="addExpenditureModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="services-modal-label">Add Expenditure</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Form for adding Expenditure -->
+                <form id="addExpenditureForm" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="description" name="description" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount</label>
+                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="date" name="date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select  class="form-control select2bs4" style="width: 100%;"   id="category" name="category" required>
+                            <option value="Salary">Salary</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Supplies">Supplies</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Add Expenditure</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle form submission
+        document.getElementById('addExpenditureForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Create FormData object to serialize form data
+            var formData = new FormData(this);
+
+            // Convert FormData to JSON object
+            var jsonFormData = {};
+            formData.forEach(function(value, key){
+                jsonFormData[key] = value;
+            });
+
+            // Send form data to server using AJAX
+            $.ajax({
+                url: '{% url "accountant_add_expenditure_view" %}',  // Replace with your server endpoint URL
+                method: 'POST',
+                data: JSON.stringify(jsonFormData),
+                contentType: 'application/json',
+                processData: false,  // Prevent jQuery from automatically processing the FormData object
+                success: function (response) {
+                    // Check if success is true or false
+                    if (response.success) {
+                      location.reload(true)
+                        // Optionally, update UI or perform other actions
+                    } else {
+                        alert('Failed to add expenditure: ' + response.error);
+                        // Optionally, handle error or perform other actions
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('Error adding expenditure: ' + error);
+                    // Optionally, display error message or perform other actions
+                }
+            });
+        });
+    });
+</script>
+
+
+
+{% include 'accountant_template/datatable.html' %}
+{% endblock main_content %}

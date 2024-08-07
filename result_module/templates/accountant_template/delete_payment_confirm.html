@@ -1,0 +1,35 @@
+{% extends 'accountant_template/base_template.html' %}
+
+{% block title %}
+Confirm Deletion of Payment
+{% endblock title %}
+
+{% block main_content %}
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <!-- general form elements -->
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title">Confirm Deletion of Payment</h3>
+                    </div>
+                    <!-- form start -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <p>Are you sure you want to delete the payment for {{ payment.student }}?</p>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                            <a href="{% url 'accountant_student_payment_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}

@@ -1,0 +1,38 @@
+<div class="table-responsive">
+    <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm" id="example">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Class</th>
+                <th>Installment</th>
+                <th>Amount Paid</th>
+                <th>Amount Remaining</th>
+                <th>Balance</th>
+                <th>Payment Status</th>
+                <th>Date Paid</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in student_results %}
+            <tr>
+                <td>{{ payment.student_name }}</td>
+                <td>{{ payment.class }}</td>
+                <td>{{ payment.installment }}</td>
+                <td>{{ payment.amount_paid }}</td>
+                <td>{{ payment.amount_remaining }}</td>
+                <td>{{ payment.balance }}</td>
+                <td>{{ payment.payment_status }}</td>
+                <td>{{ payment.date_paid }}</td>
+                <td class="text-center">
+                    <a href="{% url 'admin_view_all_payments' payment.student_id %}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="View All Payments">
+                        <i class="fas fa-list"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+  {% include 'hod_template/datatable.html' %}

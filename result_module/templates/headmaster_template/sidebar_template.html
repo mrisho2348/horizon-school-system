@@ -1,0 +1,228 @@
+{% load static %}
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="index3.html" class="brand-link">
+        <img src="{% static 'img/zamzamLogo.jpg' %}" alt="zamzam Logo" class="brand-image img-circle elevation-3"
+             style="opacity: .8">
+        <span class="brand-text font-weight-light">zamzam school </span>
+      </a>
+  
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar user panel (optional) -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        {% if request.user.staffs.staff_role == "Admin" %}
+            <div class="image">
+                <!-- Add a link to update the profile picture -->           
+                <a href="{% url 'admin_update_profile_picture' %}">
+                    {% if request.user.staffs.profile_pic %}
+                        <img src="{{ request.user.staffs.profile_pic.url }}" class="img-circle elevation-2" alt="User Image">
+                    {% else %}
+                        <img src="{% static 'dist/img/user2-160x160.jpg' %}" class="img-circle elevation-2" alt="User Image">
+                    {% endif %}       
+                </a>
+            </div>
+            <div class="info">
+                {% url 'admin_employee_detail' as employee_detail_url %}
+                <a href="{{ employee_detail_url }}" class="d-block">{{ user.username }}</a>
+            </div>   
+        {% else %}
+            <div class="image">
+                {% if doctor.profile_pic %}
+                    <img src="{{ doctor.profile_pic.url }}" class="img-circle elevation-2" alt="User Image">
+                {% else %}
+                    <img src="{% static 'dist/img/user2-160x160.jpg' %}" class="img-circle elevation-2" alt="User Image">
+                {% endif %}
+            </div>
+            <div class="info">
+                {% url 'admin_profile' as admin_profile %}
+                <a href="{{ admin_profile }}" class="d-block">{{ user.username }}</a>
+            </div>
+        {% endif %}
+      </div>
+
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+          <!-- Add icons to the links using the .nav-icon class
+               with font-awesome or any other icon font library -->
+
+          <li class="nav-item">
+             {% url 'admin_home' as admin_home_url %}
+            <a href="{{ admin_home_url }}" class="nav-link {% if request.path == admin_home %} active {% endif %}">
+              <i class="nav-icon fas fa-th"></i>
+              <p>
+                HOME             
+              </p>
+            </a>
+          </li>          
+          <li class="nav-item">
+            {% url 'admin_manage_staff' as manage_staff_url %}
+            <a href="{{ manage_staff_url }}" class="nav-link {% if request.path == manage_staff_url %}active{% endif %}">
+                <i class="nav-icon fas fa-users"></i> <!-- Correct Font Awesome icon -->
+                <p>
+                    Staffs
+                </p>
+            </a>
+        </li>
+        <li class="nav-item">
+          {% url 'admin_staff_feedback_message' as staff_feedback_message_url %}
+          <a href="{{ staff_feedback_message_url }}" class="nav-link {% if request.path == staff_feedback_message_url %}active{% endif %}">
+           
+            <i class="nav-icon fas fa-bars"></i>
+            <p>
+              Staff Feedback
+              <i class="right"></i>
+            </p>
+          </a>
+        </li>
+        <li class="nav-item">
+          {% url 'admin_staff_leave_view' as staff_leave_view_url %}
+          <a href="{{ staff_leave_view_url }}" class="nav-link {% if request.path == staff_leave_view_url %}active{% endif %}">
+            <i class="nav-icon fas fa-bars"></i>
+            <p>
+              Staff Leave
+            </p>
+          </a>
+        </li>
+          <li class="nav-item">
+            {% url 'admin_staff_announcements' as staff_announcements_url %} 
+            <a href="{{ staff_announcements_url }}" class="nav-link {% if request.path == staff_announcements_url %}active{% endif %}">
+                <i class="nav-icon fas fa-bullhorn"></i> 
+                    Manage Announcements 
+                </p>
+            </a>
+        </li>
+          <li class="nav-item">
+            {% url 'admin_manage_student' as manage_student_url %}          
+            <a href="{{ manage_student_url }}" class="nav-link {% if request.path == manage_student_url %}active{% endif %}">
+                <i class="nav-icon fas fa-user-graduate"></i>
+                <p>
+                    Students Management
+               </p>
+            </a>
+        </li>
+          <li class="nav-item">
+            {% url 'admin_display_results' as display_results_url %}          
+            <a href="{{ display_results_url }}" class="nav-link {% if request.path == display_results_url %}active{% endif %}">
+                <i class="nav-icon fas fa-user-graduate"></i>
+                <p>
+                    Students results
+               </p>
+            </a>
+        </li>
+        <li class="nav-item">
+          {% url 'admin_view_subject_attendance' as view_subject_attendance_url %}
+          <a href="{{ view_subject_attendance_url }}" class="nav-link  {% if request.path == view_subject_attendance_url %}active{% endif %}">
+            <i class="nav-icon fas fa-bars"></i>
+            <p>
+              View subject  Attendance
+            </p>
+          </a>
+        </li>
+        <li class="nav-item">
+          {% url 'admin_view_class_attendance' as view_class_attendance_url %}
+          <a href="{{ view_class_attendance_url }}" class="nav-link  {% if request.path == view_class_attendance_url %}active{% endif %}">
+            <i class="nav-icon fas fa-bars"></i>
+            <p>
+              View class  Attendance
+            </p>
+          </a>
+        </li>
+        <li class="nav-item">
+          {% url 'admin_student_feedback_message' as student_feedback_message_url %}
+          <a href="{{ student_feedback_message_url }}" class="nav-link {% if request.path == student_feedback_message_url %}active{% endif %}">
+            <i class="nav-icon fas fa-user"></i>
+            <p>
+              student Feedback
+            </p>
+          </a>
+        </li>
+        <li class="nav-item">
+          {% url 'admin_student_leave_view' as student_leave_view_url %}
+          <a href="{{ student_leave_view_url }}" class="nav-link {% if request.path == student_leave_view_url %}active{% endif %}">
+            <i class="nav-icon fas fa-user"></i>
+            <p>
+              student Leave
+            </p>
+          </a>
+        </li>
+        <li class="nav-item">
+            {% url 'admin_manage_subject' as manage_subject_url %}       
+            <a href="{{ manage_subject_url }}" class="nav-link {% if request.path == manage_subject_url %}active{% endif %}">
+                <i class="nav-icon fas fa-book"></i>
+                <p>
+                    Subject Management
+               </p>
+            </a>
+        </li>
+        <li class="nav-item">
+            {% url 'admin_manage_exam_type' as manage_exam_type_url %}
+            <a href="{{ manage_exam_type_url }}" class="nav-link {% if request.path == manage_exam_type_url %}active{% endif %}">
+                <i class="nav-icon fas fa-clipboard-check"></i>
+                <p>
+                    Exam Type Management
+               </p>
+            </a>
+        </li>
+        <li class="nav-item">
+          {% url 'admin_exam_type_list' as exam_type_list_url %}            
+          <a href="{{ exam_type_list_url }}" class="nav-link {% if request.path == exam_type_list_url %}active{% endif %}">
+              <i class="nav-icon fas fa-plus"></i> 
+              <p>
+                  Add Result
+                  
+              </p>
+          </a>
+      </li>
+        <li class="nav-item">
+          {% url 'admin_fees_collected' as fees_collected_url %}
+          <a href="{{ fees_collected_url }}" class="nav-link {% if request.path == fees_collected_url %} active {% endif %}">
+              <i class="nav-icon fas fa-coins"></i>
+              <p>Fees Collected</p>
+          </a>
+      </li>
+      <li class="nav-item">
+          {% url 'admin_pending_payments' as pending_payments_url %}
+          <a href="{{ pending_payments_url }}" class="nav-link {% if request.path == pending_payments_url %} active {% endif %}">
+              <i class="nav-icon fas fa-clock"></i>
+              <p>Pending Payments</p>
+          </a>
+      </li>
+      <li class="nav-item">
+          {% url 'admin_expenditure' as expenditure_url %}
+          <a href="{{ expenditure_url }}" class="nav-link {% if request.path == expenditure_url %} active {% endif %}">
+              <i class="nav-icon fas fa-money-bill-wave"></i>
+              <p>Expenditure</p>
+          </a>
+      </li>
+      <li class="nav-item">
+          {% url 'admin_filter_payments' as search_payments_url %}
+          <a href="{{ search_payments_url }}" class="nav-link {% if request.path == search_payments_url %} active {% endif %}">
+              <i class="nav-icon fas fa-search-dollar"></i>
+              <p>Students Payments</p>
+          </a>
+      </li>
+      <li class="nav-item">
+          {% url 'admin_school_fees_installments_list' as school_fees_installments_list_url %}
+          <a href="{{ school_fees_installments_list_url }}" class="nav-link {% if request.path == school_fees_installments_list_url %} active {% endif %}">
+              <i class="nav-icon fas fa-calendar-alt"></i>
+              <p>Installments List</p>
+          </a>
+      </li>    
+        <li class="nav-item">
+            {% url 'admin_students_wise_result_page' as students_wise_result_page_url %}            
+            <a href="{{ students_wise_result_page_url }}" class="nav-link {% if request.path == students_wise_result_page_url %}active{% endif %}">
+                <i class="nav-icon fas fa-poll"></i>
+                <p>
+                    Result Management
+               </p>
+            </a>
+        </li>
+     </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+  </aside>

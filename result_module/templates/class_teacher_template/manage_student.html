@@ -1,0 +1,111 @@
+{% extends 'staff_template/base_template.html' %}
+
+{% block page_title %}
+   All {{page_obj.current_class}} Registered Students
+{% endblock page_title %}
+
+{% block breadcrumb %}
+{% include "staff_template/modal_form.html" %}
+{% endblock breadcrumb %}
+
+{% load static %}
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6  class="header-title text-center mt-0 mb-1  text-uppercase">List of Students</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm  display" id="example"  style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Registration Number</th>
+                                    <th>Examination Number</th>
+                                    <th>Full Name</th>
+                                    <th>Current Class</th>
+                                    <th>Age</th>
+                                    <th>Gender</th>
+                                    <th>Phone Number</th>
+                                    <th>Fee Payer Number</th>
+                                    <th>Address</th>
+                                    <th>Picture</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-table-body">
+                                {% for student in students %}
+                                <tr>
+                                    <td>{{ student.registration_number }}</td>
+                                    <td>{% if student.examination_number %}
+                                        {{ student.examination_number }}
+                                        {% else %}
+                                        not assigned yet
+                                       {% endif %}
+                                </td>
+                                    <td>{{ student.full_name }}</td>
+                                    <td>{{ student.current_class }}</td>
+                                    <td>      <script>
+                                        var dob = new Date("{{ student.date_of_birth|date:'Y-m-d' }}");
+                                        var now = new Date();
+                                        var ageMilliseconds = now - dob;
+                                        var ageSeconds = ageMilliseconds / 1000;
+                                        var ageYears = Math.floor(ageSeconds / (365.25 * 24 * 60 * 60));
+                                        document.write(ageYears + ' years');
+                                    </script>
+                                </td>
+                                    <td>{{ student.gender }}</td>
+                                    <td>{{ student.phone_number }}</td>
+                                    <td>{{ student.fee_payer_number }}</td>
+                                    <td>{{ student.address }}</td>
+                                    <td>
+                                        {% if student.profile_pic %}
+                                            <img src="{{ student.profile_pic.url }}" style="width:100px;" alt="Profile Picture" />
+                                        {% else %}
+                                            <p>No profile picture</p>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form method="POST" >
+                                            {% csrf_token %}
+                                            <input type="hidden" name="user_id" value="{{ student.id }}">
+                                            <input type="hidden" name="is_active" value="{% if student.is_active %}1{% else %}0{% endif %}">
+                                            <input
+                                                type="checkbox"
+                                                data-toggle="switchbutton"
+                                                data-size="xs"
+                                                data-onlabel="Active"
+                                                data-offlabel="Inactive"
+                                                data-offstyle="danger"
+                                                data-onstyle="success"
+                                                {% if student.is_active %}checked{% endif %}
+                                                onchange="submitForm(this)"
+                                            >
+                                        </form>
+                                    </td>
+                                    <td>                                                                         
+                                          <!-- Add the View Result button -->
+                                    <a href="{% url 'staff_student_general_attendance' student.id %}" class="btn btn-info btn-sm" data-toggle="tooltip" title="View General attendance">
+                                        <i class="fa fa-eye text-dark"></i>
+                                    </a>  
+                                   
+                                      </td>                                   
+                    
+                    
+                                </tr>              
+                                  
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'staff_template/datatable.html' %}
+{% endblock main_content %}

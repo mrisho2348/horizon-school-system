@@ -1,0 +1,65 @@
+{% extends 'accountant_template/base_template.html' %}
+
+{% block title %}
+Students Payment List
+{% endblock title %}
+
+{% block breadcrumb %}
+{% include "accountant_template/modal_form.html" %}
+<a class="btn btn-primary float-right" type="button" href="{% url "accountant_add_payment" %}">
+    <i class="fas fa-plus"></i> New Payment
+</a>
+{% endblock breadcrumb %}
+
+{% load static %}
+{% block main_content %}
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6  class="header-title text-center mt-0 mb-1  text-uppercase">Students Payment List</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm  display" id="example"  style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Amount Paid</th>
+                                    <th>Payment Date</th>
+                                    <th>Purpose</th>
+                                    <th>Receipt Number</th>
+                                    <th>Remarks</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td>{{ payment.student }}</td>
+                                    <td>{{ payment.amount_paid }}</td>
+                                    <td>{{ payment.payment_date }}</td>
+                                    <td>{{ payment.payment_purpose }}</td>
+                                    <td>{{ payment.receipt_number }}</td>
+                                    <td>{{ payment.remarks }}</td>
+                                    <td>
+                                        <!-- Add edit and delete links/buttons as needed -->
+                                        <a href="{% url 'accountant_edit_payment' payment.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                        <a href="{% url 'accountant_delete_payment' payment.id %}" class="btn btn-sm btn-danger">Delete</a>
+                                    </td>
+                                </tr>                               
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'accountant_template/datatable.html' %}
+{% endblock main_content %}

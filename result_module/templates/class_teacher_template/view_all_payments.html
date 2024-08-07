@@ -1,0 +1,49 @@
+{% extends 'student_template/base_template.html' %}
+<title>
+    {% block title %}
+    All Payments for {{student.full_name }}
+    {% endblock title %}
+</title>
+{% block breadcrumb %}
+{% include "student_template/modal_form.html" %}
+{{student.full_name }}
+{% endblock breadcrumb %}
+{% load static %}
+{% block main_content %}
+<div class="container-fluid mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title text-center">All Payments for <b>{{student.full_name }}</b></h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm"  id="example">
+                    <thead>
+                        <tr>
+                            <th>Installment</th>
+                            <th>Amount Paid</th>
+                            <th>Amount Remaining</th>
+                            <th>Balance</th>
+                            <th>Payment Status</th>
+                            <th>Date Paid</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.installment }}</td>
+                            <td>{{ payment.amount_paid }}</td>
+                            <td>{{ payment.amount_remaining }}</td>
+                            <td>{{ payment.balance }}</td>
+                            <td>{{ payment.payment_status }}</td>
+                            <td>{{ payment.date_paid }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'hod_template/datatable.html' %}
+{% endblock main_content %}

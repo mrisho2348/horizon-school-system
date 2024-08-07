@@ -1,0 +1,59 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block title %}
+School Fees Payments
+{% endblock title %}
+
+{% block breadcrumb %}
+{% include "hod_template/modal_form.html" %}
+{% endblock breadcrumb %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6  class="header-title text-center mt-0 mb-1  text-uppercase">School Fees Payments</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm" id="example">
+                            <thead>
+                                <tr>                                
+                                    <th>Student</th>
+                                    <th>Student class</th>
+                                    <th>Installment</th>
+                                    <th>Amount Required</th>
+                                    <th>Amount Paid</th>
+                                    <th>Amount Remaining</th>
+                                    <th>Balance</th>
+                                    <th>Date Paid</th>
+                                    <th>Payment Status</th>                              
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>                             
+                                    <td>{{ payment.student.full_name }}</td>
+                                    <td>{{ payment.student.current_class }}</td>
+                                    <td>{{ payment.installment.installment_name }}</td>
+                                    <td>{{ payment.installment.amount_required }}</td>
+                                    <td>{{ payment.amount_paid }}</td>
+                                    <td>{{ payment.amount_remaining }}</td>
+                                    <td>{{ payment.balance }}</td>
+                                    <td>{{ payment.date_paid }}</td>
+                                    <td>{{ payment.payment_status }}</td>                                    
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+             
+        </div>
+    </div>
+</div>
+{% include 'hod_template/datatable.html' %}
+{% endblock main_content %}

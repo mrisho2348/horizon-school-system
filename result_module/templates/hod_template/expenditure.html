@@ -1,0 +1,50 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block title %}
+Expenditure Details
+{% endblock title %}
+
+{% block breadcrumb %}
+{% include "hod_template/modal_form.html" %}
+{% endblock breadcrumb %}
+
+{% load static %}
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6  class="header-title text-center mt-0 mb-1  text-uppercase">Expenditure Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm  display" id="example"  style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Category</th>                            
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for expenditure in expenditures %}
+                                <tr>
+                                    <td>{{ expenditure.description }}</td>
+                                    <td>{{ expenditure.amount }}</td>
+                                    <td>{{ expenditure.date }}</td>
+                                    <td>{{ expenditure.category }}</td>                                    
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'hod_template/datatable.html' %}
+{% endblock main_content %}

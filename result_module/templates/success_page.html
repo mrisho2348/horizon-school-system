@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="icon" type="image/png" href="{% static 'img/zamzamLogo.jpg' %}">
+  <title>HORIZON ACADEMY | Sign Up</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css' %}">
+  <link href="{% static 'plugins/select2/css/select2.min.css' %}" rel="stylesheet" />
+<link rel="stylesheet" href="{% static 'plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css' %}">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="{% static 'plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="{% static 'plugins/select2/css/select2.min.css' %}">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+  <style>
+    body {
+      background-image: url("{% static 'img/staff_loginbackground_image.jpg' %}");
+      background-size: cover;
+    }
+  </style>
+</head>
+<body class="hold-transition">
+
+    <div class="container">
+        <div class="login-logo text-center">
+          <img src="{% static 'img/zamzamLogo.jpg' %}" alt="ZAMZAM LOGO" class="brand-image img-circle elevation-3" style="opacity: .8; width: 200px;">
+        </div>
+        <div class="login-logo text-center">    
+          <a href="#"><b>HORIZON</b> ACADEMY</a>
+        </div>
+      
+        <div class="card">
+          <div class="card-body">     
+            <div class="container-fluid">
+              <div class="row">
+                <!-- Left column -->
+                <div class="col-md-12">
+                  <!-- Staff creation form -->
+                  <div class="card card-primary">
+                 
+                    <div class="card-body">
+                      <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="contact-form">
+                                    <h2>Congratulations!</h2>
+                                    <p>Your account has been created successfully. Please check your email for activation instructions. Once your account is activated by the administrator, you will be able to log in. If the activation takes too long, please contact the administrator. You will receive an email confirmation once your account has been activated or deactivated.</p>
+                                    <a href="{% url 'login' %}" class="btn btn-primary">Back to Login</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+
+<!-- jQuery -->
+<script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+<!-- Bootstrap 4 -->
+<!-- Select2 -->
+<script src="{% static 'plugins/select2/js/select2.full.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'dist/js/adminlte.min.js' %}"></script>
+
+</body>
+</html>

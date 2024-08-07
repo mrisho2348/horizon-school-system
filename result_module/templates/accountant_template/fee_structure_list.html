@@ -1,0 +1,63 @@
+{% extends 'accountant_template/base_template.html' %}
+
+{% block page_title %}
+Fee Structure List
+{% endblock page_title %}
+
+{% block breadcrumb %}
+{% include "accountant_template/modal_form.html" %}
+<a class="btn btn-primary float-right" type="button" href="{% url "accountant_add_fee_structure" %}">
+    <i class="fas fa-plus"></i> New Fee Structure
+</a>
+{% endblock breadcrumb %}
+
+{% load static %}
+{% block main_content %}
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6  class="header-title text-center mt-0 mb-1  text-uppercase">Fee Structure List</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm  display" id="example"  style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Class</th>
+                                    <th>School Fee Amount</th>
+                                    <th>Uniform Fee Amount</th>
+                                    <th>Other Fee Amount</th>
+                                    <th>Total Amount</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fee_structure in fee_structures %}
+                                    <tr>
+                                        <td>{{ fee_structure.school_class }}</td>
+                                        <td>{{ fee_structure.school_fee_amount }}</td>
+                                        <td>{{ fee_structure.uniform_fee_amount }}</td>
+                                        <td>{{ fee_structure.other_fee_amount }}</td>
+                                        <td>{{ fee_structure.total_amount }}</td>
+                                        <td>
+                                            <!-- Add edit and delete links/buttons as needed -->
+                                            <a href="{% url 'accountant_edit_fee_structure' fee_structure.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                            <a href="{% url 'accountant_delete_fee_structure' fee_structure.id %}" class="btn btn-sm btn-danger">Delete</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'accountant_template/datatable.html' %}
+{% endblock main_content %}

@@ -1,0 +1,132 @@
+{% load static %}
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="#" class="brand-link">
+      <img src="{% static 'img/zamzamLogo.jpg' %}" alt="Tabora Logo" class="brand-image img-circle elevation-3"
+           style="opacity: .8">
+      <span class="brand-text font-weight-light">Zam Zam </span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar user panel (optional) -->
+      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+          <!-- Add a link to update the profile picture -->           
+          <a href="{% url 'accountant_update_profile_picture' %}">
+              {% if request.user.staffs.profile_pic %}
+                  <img src="{{ request.user.staffs.profile_pic.url }}" class="img-circle elevation-2" alt="User Image">
+              {% else %}
+                  <img src="{% static 'dist/img/user2-160x160.jpg' %}" class="img-circle elevation-2" alt="User Image">
+              {% endif %}       
+          </a>
+      </div>
+        <div class="info">
+          <a href="#" class="d-block">{{user.username}}</a>
+        </div>
+      </div>
+  <!-- Sidebar Menu -->
+  <nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+      <!-- Add icons to the links using the .nav-icon class
+           with font-awesome or any other icon font library -->
+
+      <li class="nav-item">
+        {% url 'accountant_home' as accountant_home %}
+        <a href="{% url 'accountant_home' %}" class="nav-link {% if request.path == accountant_home %} active {% endif %}">
+
+          <i class="nav-icon fa fa-home"></i>
+          <p>
+            HOME
+            {% comment %} <span class="right badge badge-danger">New</span> {% endcomment %}
+          </p>
+        </a>
+      </li> 
+      <div class="sidebar">
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                <li class="nav-item">
+                    {% url 'accountant_school_fees_installments_list' as school_fees_installments_list_url %}
+                    <a href="{{ school_fees_installments_list_url }}" class="nav-link {% if request.path == school_fees_installments_list_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-coins"></i>
+                        <p>Installment</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_fee_structure_list' as accountant_fee_structure_list_url %}
+                    <a href="{{ accountant_fee_structure_list_url }}" class="nav-link {% if request.path == accountant_fee_structure_list_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-coins"></i>
+                        <p>Fee Structure</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_student_list' as student_list_url %}          
+                    <a href="{{ student_list_url }}" class="nav-link {% if request.path == student_list_url %}active{% endif %}">
+                        <i class="nav-icon fas fa-user-graduate"></i>
+                        <p>
+                            Students List
+                       </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_payment_list' as payment_list %}
+                    <a href="{{ payment_list }}" class="nav-link {% if request.path == payment_list %} active {% endif %}">
+                        <i class="nav-icon fas fa-money-check-alt"></i>
+                        <p>School Fees Payments</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_filter_payments' as filter_payment_url %}
+                    <a href="{{ filter_payment_url }}" class="nav-link {% if request.path == filter_payment_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-money-check"></i>
+                        <p>Student payments</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_student_payment_list' as student_payment_list %}
+                    <a href="{{ student_payment_list }}" class="nav-link {% if request.path == student_payment_list %} active {% endif %}">
+                        <i class="nav-icon fas fa-money-check"></i>
+                        <p>Forms payments</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_expenditure' as expenditure_url %}
+                    <a href="{{ expenditure_url }}" class="nav-link {% if request.path == expenditure_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                        <p>Expenditure</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_staff_sendfeedback' as staff_sendfeedback_url %}
+                    <a href="{{ staff_sendfeedback_url }}" class="nav-link {% if request.path == staff_sendfeedback_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-comments"></i>
+                        <p>Send Feedback</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_staff_apply_leave' as staff_apply_leave_url %}
+                    <a href="{{ staff_apply_leave_url }}" class="nav-link {% if request.path == staff_apply_leave_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-calendar-times"></i>
+                        <p>Apply for Leave</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_staff_detail' as staff_detail_url %}
+                    <a href="{{ staff_detail_url }}" class="nav-link {% if request.path == staff_detail_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-user"></i>
+                        <p>My Details</p>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <!-- /.sidebar-menu -->
+    </div>
+    
+    <!-- /.sidebar -->
+  </aside>
+
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+  </aside>

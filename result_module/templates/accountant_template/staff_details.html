@@ -1,0 +1,89 @@
+{% extends 'accountant_template/base_template.html' %}
+{% load static %}
+
+{% block title %}
+  Staff Information
+{% endblock title %}
+
+{% block main_content %}
+<div class="container-fluid mt-5">
+  <!-- Personal Information -->
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      Personal Information
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">Full Name: 
+        <span style="color: blue;">{{ staff.admin.get_full_name }}</span>
+      </h5>
+      <p class="card-text">Address: {{ staff.address }}</p>      
+      <p class="card-text">Gender: {{ staff.gender }}</p>
+      <p class="card-text">Date of Birth: <span id="dateOfBirth">{{ staff.date_of_birth|date:"F d, Y" }}</span> (<span id="age"></span> years old)</p>
+      <p class="card-text">Contact Number: {{ staff.phone_number }}</p>
+      <p class="card-text">Date of Employment: <span id="dateOfEmployment">{{ staff.date_of_employment|date:"F d, Y" }}</span> (<span id="yearsOfEmployment"></span> years)</p>  
+  
+    </div>
+  </div>
+  <!-- Display Profile Picture -->
+  {% if request.user.staffs.profile_pic.url %}
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        Profile Picture
+      </div>
+      <div class="card-body">
+        <img src="{{ request.user.staffs.profile_pic.url }}" alt="Profile Picture" class="img-fluid">
+      </div>
+    </div>
+  {% endif %} 
+  <!-- Subjects -->
+  {% if staff.subjects.all %}
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        Subjects
+      </div>
+      <div class="card-body">
+        <ul>
+          {% for subject in staff.subjects.all %}
+            <li><span style="color: orange;">{{ subject.subject_name }}</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  {% endif %} 
+
+  {% if staff.subjects.all %}
+    <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      Academic Details
+    </div>
+    <div class="card-body">
+      <p class="card-text">Staff Role: {{ staff.staff_role }}</p>
+      <p class="card-text">Current Class Taught: {{ staff.current_class }}</p>
+      <p class="card-text">Date of Registration: {{ staff.created_at|date:"F d, Y" }}</p>
+    </div>
+  </div>
+</div>
+  {% endif %} 
+</div>
+
+<script>
+  // Calculate age
+  var dateOfBirth = new Date("{{ staff.date_of_birth }}");
+  var today = new Date();
+  var age = today.getFullYear() - dateOfBirth.getFullYear();
+  var m = today.getMonth() - dateOfBirth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dateOfBirth.getDate())) {
+      age--;
+  }
+  document.getElementById("age").innerText = age;
+
+  // Calculate years of employment
+  var dateOfEmployment = new Date("{{ staff.date_of_employment }}");
+  var yearsOfEmployment = today.getFullYear() - dateOfEmployment.getFullYear();
+  var m = today.getMonth() - dateOfEmployment.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dateOfEmployment.getDate())) {
+      yearsOfEmployment--;
+  }
+  document.getElementById("yearsOfEmployment").innerText = yearsOfEmployment;
+</script>
+{% endblock main_content %}
