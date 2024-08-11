@@ -73,8 +73,7 @@ BRANCH_CHOICES = [
 STAFF_ROLE_CHOICES = [
     ('Academic', 'Academic'),
     ('Headmaster', 'Headmaster'),
-    ('Admin', 'Admin'),
-    ('Class Teacher', 'Class Teacher'),
+    ('Admin', 'Admin'),   
     ('Accountant', 'Accountant'),
 
 ]
@@ -126,8 +125,7 @@ class AddStaffForm(forms.ModelForm):
     )
     staff_role = forms.ChoiceField(
         label='Staff Role', required=True, choices=[
-            ('Admin', 'Admin'),
-            ('Staff', 'Staff'),
+            ('Admin', 'Admin'),      
             ('Accountant', 'Accountant'),
             ('Headmaster', 'Headmaster'),
             ('Academic', 'Academic')

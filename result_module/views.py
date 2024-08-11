@@ -168,9 +168,7 @@ def DoLogin(request):
                     elif staff.staff_role == "Academic":
                         return HttpResponseRedirect(reverse("academic_home"))
                     elif staff.staff_role == "Headmaster":
-                        return HttpResponseRedirect(reverse("headmaster_home"))
-                    elif staff.staff_role == "Class Teacher":
-                        return HttpResponseRedirect(reverse("class_teacher_home"))
+                        return HttpResponseRedirect(reverse("headmaster_home"))                 
                     else:
                         messages.error(request, "Your role is not recognized. Please contact the administrator.")
                         return HttpResponseRedirect(reverse("login"))

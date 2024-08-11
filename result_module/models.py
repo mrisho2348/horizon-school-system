@@ -162,8 +162,7 @@ class Students(models.Model):
 STAFF_ROLE_CHOICES = [
     ('Academic', 'Academic'),
     ('Headmaster', 'Headmaster'),
-    ('Admin', 'Admin'),
-    ('Class Teacher', 'Class Teacher'),
+    ('Admin', 'Admin'),  
     ('Accountant', 'Accountant'),
    
 ]
