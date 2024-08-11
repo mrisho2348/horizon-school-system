@@ -1,4 +1,4 @@
-{% include "staff_template/modal_form.html" %}
+{% include "academic_template/modal_form.html" %}
 <div class="row">
     <div class="col-md-12">
         <div class="container-fluid mt-5">
@@ -26,17 +26,14 @@
                           <td>{{ result.determine_grade }}</td>
                           <td>{{ result.determine_pass_fail }}</td>
                           <td>
-                            {% if result.subject in staff.subjects.all %}
-                                  <!-- Action button to open the modal -->
+                              <!-- Action button to open the modal -->
                               <button type="button" class="btn btn-success" data-toggle="modal" data-target="#editMarksModal{{ result.id }}">
-                                <i class="fas fa-edit"></i> 
-                            </button>
-                                <!-- Action button to open the delete modal -->
+                                  <i class="fas fa-edit"></i> 
+                              </button>
+                                 <!-- Action button to open the delete modal -->
                             <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteResultModal{{ result.id }}">
-                                <i class="fas fa-trash"></i> 
-                            </button>
-                            {% endif %}
-                            
+                              <i class="fas fa-trash"></i> 
+                          </button>
                           </td>
                       </tr>
                         <!-- Bootstrap modal for editing marks -->
@@ -98,7 +95,7 @@
                     function saveMarks(resultId) {
                         var marks = $('#marks' + resultId).val();
                         $.ajax({
-                            url: '{% url "staff_save_marks_endpoint" %}',
+                            url: '{% url "academic_save_marks_endpoint" %}',
                             type: 'POST',
                             data: {
                                 resultId: resultId,
@@ -121,7 +118,7 @@
                     // Function to delete the result
                     function deleteResult(resultId) {
                         $.ajax({
-                            url: '{% url "staff_delete_result_endpoint" %}',
+                            url: '{% url "academic_delete_result_endpoint" %}',
                             type: 'POST',
                             data: {
                                 resultId: resultId
@@ -165,7 +162,8 @@
                   <p>No <span style="color:brown">{{ exam_type.name }}</span> subject-wise results assigned yet for this student.</p>
                 {% endif %}
               </div>
-              <a href="{% url 'staff_download_student_results_excel' student.id exam_type.id year %}" class="btn btn-primary">Download Results as Excel</a>
+              <a href="{% url 'academic_download_student_results_excel' student.id exam_type.id year %}" class="btn btn-primary">Download Results as Excel</a>
+            </div>
             </div>
           </div>
     </div>
@@ -173,4 +171,4 @@
 </div>
 
 
-{% include 'staff_template/datatable.html' %}
+{% include 'hod_template/datatable.html' %}

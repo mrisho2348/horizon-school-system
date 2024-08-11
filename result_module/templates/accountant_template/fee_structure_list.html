@@ -46,7 +46,7 @@ Fee Structure List
                                         <td>
                                             <!-- Add edit and delete links/buttons as needed -->
                                             <a href="{% url 'accountant_edit_fee_structure' fee_structure.id %}" class="btn btn-sm btn-primary">Edit</a>
-                                            <a href="{% url 'accountant_delete_fee_structure' fee_structure.id %}" class="btn btn-sm btn-danger">Delete</a>
+                                            {% comment %} <a href="{% url 'accountant_delete_fee_structure' fee_structure.id %}" class="btn btn-sm btn-danger">Delete</a> {% endcomment %}
                                         </td>
                                     </tr>
                                 {% endfor %}

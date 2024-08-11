@@ -1,4 +1,4 @@
-{% extends 'staff_template/base_template.html' %}
+{% extends 'academic_template/base_template.html' %}
 {% block title %}
     View Update Attendance
 {% endblock title %}
@@ -18,11 +18,10 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Select Class</label>
-                                        <select class="form-control select2bs4" style="width: 100%;" id="current_class" name="current_class">
-                                            <option value="Form One">Form One</option>
-                                            <option value="Form Two">Form Two</option>
-                                            <option value="Form Three">Form Three</option>
-                                            <option value="Form Four">Form Four</option>
+                                        <select class="form-control select2bs4" style="width: 100%;" id="class_level" name="class_level" required>
+                                            {% for class_level in class_levels %}
+                                                <option value="{{ class_level.id }}">{{ class_level.class_name }}</option>
+                                            {% endfor %}
                                         </select>
                                     </div>
                                 </div>
@@ -53,49 +52,52 @@
 
 {% block customer_js %}
 <script>
-    $(document).ready(function(){      
+    $(document).ready(function() {      
         $("#fetch_attendance").click(function() {
-            var date = $("#date").val();
-            var current_class = $("#current_class").val();
+            var date = $("#date").val();  // Fetch the selected date from the input
+            var class_level = $("#class_level").val();  // Fetch the selected class level
 
             $.ajax({
-                url: '{% url 'staff_get_class_student_attendance_data' %}',
+                url: '{% url 'academic_get_class_student_attendance_data' %}',
                 type: 'POST',
                 data: {
                     date: date,
-                    current_class: current_class
+                    class_level: class_level
                 },
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token if required
+                },
+                dataType: 'json'  // Expect JSON response
             })
             .done(function(response) {
-                var json_data = JSON.parse(response);
-                console.log(json_data);
+                console.log(response);  // Log the response for debugging
             
-                // Get the class and subject names based on the selected values
-                var selectedClass = $("#current_class option:selected").text();
-                var selectedDate = $("#date option:selected").text();
+                // Get the class and date names based on the selected values
+                var selectedClass = $("#class_level option:selected").text();
+                var selectedDate = date;  // Directly use the date value
                 
                 // Update the title dynamically
-                document.title = selectedClass + " - " + selectedDate + " |  Attendance"; 
+                document.title = selectedClass + " - " + selectedDate + " | Attendance"; 
                 
                 // Create the card structure with a header
                 var cardHtml = "<div class='card card-success'>";
-                cardHtml += "<div class='card-header'>" + selectedClass + " Student Attendance on " + selectedDate + "</div>"; // Add card header with class and subject
+                cardHtml += "<div class='card-header'>" + selectedClass + " Student Attendance on " + selectedDate + "</div>"; // Add card header with class and date
                 cardHtml += "<div class='card-body'>";
                 cardHtml += "<div class='table-responsive'><table class='table table-hover text-nowrap table-bordered table-striped table-sm' id='example'><thead><tr><th>Student Name</th><th>Attendance</th></tr></thead><tbody>";
             
                 // Generate the student attendance rows in table format
-                for (var key in json_data) {
-                    cardHtml += "<tr><td>" + json_data[key]['name'] + "</td><td>";
+                $.each(response, function(index, student) {
+                    cardHtml += "<tr><td>" + student.name + "</td><td>";
                     
                     // Check if the student's attendance is present or absent and display accordingly
-                    if (json_data[key]["status"]) {
+                    if (student.status) {
                         cardHtml += "<span class='badge badge-success'>Present</span>";
                     } else {
                         cardHtml += "<span class='badge badge-danger'>Absent</span>";
                     }
                     
                     cardHtml += "</td></tr>";
-                }
+                });
             
                 cardHtml += "</tbody></table></div>"; // Close table body and table
                 cardHtml += "<div class='form-group'>";              
@@ -106,17 +108,18 @@
                 $("#student_data").html(cardHtml);
                 
                 // Initialize DataTables
-                new DataTable('#example', {
+                $('#example').DataTable({
                     dom: 'Bfrtip',
-                    buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+                    buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
                 });
               
             })
-            .fail(function() {
-                alert("Error in Fetching Student");
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("Error: " + textStatus, errorThrown);  // Log detailed error information
+                alert("Error in fetching student data.");
             });
         }); 
-             
-    })
+    });
 </script>
+
 {% endblock customer_js %}

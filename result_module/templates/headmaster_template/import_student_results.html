@@ -1,0 +1,64 @@
+{% extends 'headmaster_template/base_template.html' %}
+
+{% block title %}
+    Import Student Results
+{% endblock title %}
+
+{% block main_content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Import Student Results</h3>
+                    </div>
+                    <div class="container-fluid">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.excel_file.id_for_label }}">{{ form.excel_file.label }}</label>
+                                    {{ form.excel_file }}
+                                    {% if form.excel_file.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.excel_file.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.date_of_exam.id_for_label }}">{{ form.date_of_exam.label }}</label>
+                                    {{ form.date_of_exam }}
+                                    {% if form.date_of_exam.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.date_of_exam.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button type="submit" class="btn btn-primary btn-block">Import Results</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group mt-3">
+                                {% if messages %}
+                                    <div class="col-12">
+                                        {% for message in messages %}
+                                            {% if message.tags == 'error' %}
+                                                <div class="alert alert-danger">{{ message }}</div>
+                                            {% elif message.tags == 'success' %}
+                                                <div class="alert alert-success">{{ message }}</div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock main_content %}

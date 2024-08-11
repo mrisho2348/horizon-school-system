@@ -1,14 +1,19 @@
 
 from collections import defaultdict
+from io import BytesIO
 import json
 from django import forms
+from django.views.generic import CreateView, UpdateView
+from django.urls import reverse_lazy, reverse
 from django.db import IntegrityError
 from django.http import Http404, HttpResponse,  HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views import View
+from django.views.generic import ListView
 from django.views.decorators.http import require_GET,require_POST
-from result_module.forms import AddStaffForm, EditStaffForm, StudentForm
-from result_module.models import AdminHOD,  ClassAttendance, CustomUser, ExamMetrics, ExamType, Expenditure, FeedBackStaff,  LeaveReportStaffs,  Result, SchoolFeesInstallment, SchoolFeesPayment,  Staffs, StudentClassAttendance, StudentExamInfo, StudentPositionInfo, Students, Subject, SujbectWiseResults
+from result_module.forms import AddStaffForm, ClassFeeForm, ClassLevelForm, EditStaffForm, ExpenditureForm, FeePaymentForm, FeeStructureForm, MadrasatulFeeForm, MadrasatulFeePaymentForm, ResultForm, SchoolFeesInstallmentForm, StudentForm, StudentResultForm, SubjectForm, TransportFeeForm, TransportFeePaymentForm
+from result_module.models import AdminHOD,  ClassAttendance, ClassFee, ClassLevel, CustomUser, ExamMetrics, ExamType, Expenditure, FeePayment, FeeStructure, FeedBackStaff,  LeaveReportStaffs, MadrasatulFee, MadrasatulFeePayment,  Result, SchoolFeesInstallment, SchoolFeesPayment,  Staffs, StudentClassAttendance, StudentExamInfo, StudentPositionInfo, Students, Subject, SujbectWiseResults, TransportFee, TransportFeePayment
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
@@ -24,15 +29,14 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 from openpyxl import Workbook
 # Create your views here.
-
 @login_required
-def admin_home(request):   
-
+def admin_home(request):
     try:
         # Fetch total number of students
         total_students = Students.objects.count()
     except Exception as e:
         return render(request, "hod_template/error.html", {"error_message": f"Error fetching total students: {str(e)}"})  
+    
     try:
         # Fetch total number of subjects
         total_subjects = Subject.objects.count()
@@ -59,7 +63,13 @@ def admin_home(request):
 
     try:
         # Calculating total fees collected
-        total_fees_collected = SchoolFeesPayment.objects.aggregate(total_collected=Sum('amount_paid'))['total_collected'] or 0
+        total_school_fees = SchoolFeesPayment.objects.aggregate(total_collected=Sum('amount_paid'))['total_collected'] or 0
+        total_madrasatul_fees = MadrasatulFeePayment.objects.aggregate(total_collected=Sum('amount_paid'))['total_collected'] or 0
+        total_transport_fees = TransportFeePayment.objects.aggregate(total_collected=Sum('amount_paid'))['total_collected'] or 0
+        total_fee_payment = FeePayment.objects.aggregate(total_collected=Sum('amount_paid'))['total_collected'] or 0
+
+        total_fees_collected = (total_school_fees + total_madrasatul_fees +
+                                total_transport_fees + total_fee_payment)
     except Exception as e:
         return render(request, "hod_template/error.html", {"error_message": f"Error calculating total fees collected: {str(e)}"})
 
@@ -76,8 +86,7 @@ def admin_home(request):
         return render(request, "hod_template/error.html", {"error_message": f"Error calculating total expenditure: {str(e)}"})
 
     try:
-        total_expenditure = Expenditure.objects.aggregate(total_spent=models.Sum('amount'))['total_spent'] or 0
-        net_profit =  total_fees_collected - total_expenditure
+        net_profit = total_fees_collected - total_expenditure
     except Exception as e:
         return render(request, "hod_template/error.html", {"error_message": f"Error calculating net profit: {str(e)}"})
 
@@ -86,13 +95,17 @@ def admin_home(request):
         'total_subjects': total_subjects,     
         'total_female_students': total_female_students,
         'total_male_students': total_male_students,
-        "student_count": students_count,
-        "total_fees_collected": total_fees_collected,
-        "pending_payments_count": pending_payments_count,
-        "total_expenditure": total_expenditure,
-        "net_profit": net_profit,
-    
+        'student_count': students_count,
+        'total_fees_collected': total_fees_collected,
+        'pending_payments_count': pending_payments_count,
+        'total_expenditure': total_expenditure,
+        'net_profit': net_profit,
+        'total_school_fees': total_school_fees,
+        'total_madrasatul_fees': total_madrasatul_fees,
+        'total_transport_fees': total_transport_fees,
+        'total_fee_payment': total_fee_payment
     })
+    
     
 @login_required
 def student_general_attendance(request, student_id):
@@ -108,13 +121,8 @@ def student_general_attendance(request, student_id):
 
         class_attendance_present = StudentClassAttendance.objects.filter(student=student_object, status=True).count()
         class_attendance_absent = StudentClassAttendance.objects.filter(student=student_object, status=False).count()
-        class_attendance_total = StudentClassAttendance.objects.filter(student=student_object).count()
-
-        # Get subject-related data
-        subject_data = Subject.objects.all()
-        subject_name = []
-        data_present = []
-        data_absent = []
+        class_attendance_total = StudentClassAttendance.objects.filter(student=student_object).count()      
+      
         total_subjects_taken = Subject.objects.all().count()
 
        
@@ -129,9 +137,7 @@ def student_general_attendance(request, student_id):
                 "class_attendance_absent": class_attendance_absent,
                 "class_attendance_total": class_attendance_total,
                 "total_subjects_taken": total_subjects_taken,
-                "subject_name": subject_name,
-                "data_present": data_present,
-                "data_absent": data_absent,         
+                                 
                 "student": student_object,  # Renamed 'students' to 'student'
             },
         )
@@ -148,18 +154,24 @@ def student_general_attendance(request, student_id):
 def get_financial_yearly_data(request):
     if request.method == 'GET' and 'year' in request.GET:
         selected_year = request.GET.get('year')
-        # Example query to fetch financial data for the selected year
+        
         try:
-            # Fetch fees collected (income)
-            fees_collected = SchoolFeesPayment.objects.filter(date_paid__year=selected_year).aggregate(total_fees_collected=models.Sum('amount_paid'))['total_fees_collected'] or 0
+            # Calculate total fees collected from all payment models for the selected year
+            school_fees_collected = SchoolFeesPayment.objects.filter(date_paid__year=selected_year).aggregate(total=models.Sum('amount_paid'))['total'] or 0
+            class_fees_collected = FeePayment.objects.filter(payment_date__year=selected_year).aggregate(total=models.Sum('amount_paid'))['total'] or 0
+            madrasatul_fees_collected = MadrasatulFeePayment.objects.filter(payment_date__year=selected_year).aggregate(total=models.Sum('amount_paid'))['total'] or 0
+            transport_fees_collected = TransportFeePayment.objects.filter(payment_date__year=selected_year).aggregate(total=models.Sum('amount_paid'))['total'] or 0
             
-            # Fetch expenditure (example: assuming you have an Expenditure model)
-            expenditure = Expenditure.objects.filter(date__year=selected_year).aggregate(total_expenditure=models.Sum('amount'))['total_expenditure'] or 0
-
+            # Sum all the fees collected
+            total_fees_collected = (school_fees_collected + class_fees_collected + madrasatul_fees_collected + transport_fees_collected)
+            
+            # Fetch expenditure (assuming you have an Expenditure model)
+            total_expenditure = Expenditure.objects.filter(date__year=selected_year).aggregate(total=models.Sum('amount'))['total'] or 0
+            
             # Prepare data to return as JSON
             data = {
-                'income': (fees_collected ),
-                'expenditure': expenditure,
+                'income': total_fees_collected,
+                'expenditure': total_expenditure,
             }
             return JsonResponse(data)
         except Exception as e:
@@ -175,36 +187,221 @@ def get_school_fees_monthly_data(request):
     year = request.GET.get('year')
     
     # Initialize monthly data dictionary
-    monthly_data_dict = {}
-    
-    # Fetch monthly income data (fees collected)
-    fees_collected_data = SchoolFeesPayment.objects.filter(date_paid__year=year).values('date_paid__month').annotate(
-        income=Sum('amount_paid')
-    ).order_by('date_paid__month')
+    monthly_data_dict = {month: {'income': 0, 'expenditure': 0} for month in range(1, 13)}
 
-    for entry in fees_collected_data:
+    # Fetch monthly income data from SchoolFeesPayment
+    school_fees_data = SchoolFeesPayment.objects.filter(date_paid__year=year).values('date_paid__month').annotate(
+        income=Sum('amount_paid')
+    ).order_by('date_paid__month')   
+
+    # Combine all data into the monthly_data_dict
+    for entry in school_fees_data:
         month = entry['date_paid__month']
-        if month not in monthly_data_dict:
-            monthly_data_dict[month] = {'income': 0, 'expenditure': 0}
-        monthly_data_dict[month]['income'] += entry['income']
+        monthly_data_dict[month]['income'] += entry['income']    
 
     # Prepare response data
     response_data = []
-    for month in sorted(monthly_data_dict.keys()):
+    for month in range(1, 13):
         response_data.append({
             'month': month,
-            'income': monthly_data_dict[month]['income'],
-            'expenditure': 0,  # No expenditure data for SchoolFeesPayment
+            'income': monthly_data_dict[month]['income'],       
         })
 
     return JsonResponse(response_data, safe=False)
 
+@require_GET
+def get_fee_payment_monthly_data(request):
+    year = request.GET.get('year')
+    
+    # Initialize monthly data dictionary
+    monthly_data_dict = {month: {'income': 0, 'expenditure': 0} for month in range(1, 13)}
+
+    # Fetch monthly income data from FeePayment
+    fee_payment_data = FeePayment.objects.filter(payment_date__year=year).values('payment_date__month').annotate(
+        income=Sum('amount_paid')
+    ).order_by('payment_date__month')
+
+    # Combine all data into the monthly_data_dict
+    for entry in fee_payment_data:
+        month = entry['payment_date__month']
+        monthly_data_dict[month]['income'] += entry['income']
+
+    # Prepare response data
+    response_data = []
+    for month in range(1, 13):
+        response_data.append({
+            'month': month,
+            'income': monthly_data_dict[month]['income'],
+        })
+
+    return JsonResponse(response_data, safe=False)
+
+@require_GET
+def get_madrasatul_fee_payment_monthly_data(request):
+    year = request.GET.get('year')
+    
+    # Initialize monthly data dictionary
+    monthly_data_dict = {month: {'income': 0, 'expenditure': 0} for month in range(1, 13)}
+
+    # Fetch monthly income data from MadrasatulFeePayment
+    madrasatul_fee_payment_data = MadrasatulFeePayment.objects.filter(payment_date__year=year).values('payment_date__month').annotate(
+        income=Sum('amount_paid')
+    ).order_by('payment_date__month')
+    print(year)
+    # Combine all data into the monthly_data_dict
+    for entry in madrasatul_fee_payment_data:
+        month = entry['payment_date__month']
+        monthly_data_dict[month]['income'] += entry['income']
+
+    # Prepare response data
+    response_data = []
+    for month in range(1, 13):
+        response_data.append({
+            'month': month,
+            'income': monthly_data_dict[month]['income'],
+        })
+
+    return JsonResponse(response_data, safe=False)
+
+@require_GET
+def get_transport_fee_payment_monthly_data(request):
+    year = request.GET.get('year')
+    
+    # Initialize monthly data dictionary
+    monthly_data_dict = {month: {'income': 0, 'expenditure': 0} for month in range(1, 13)}
+
+    # Fetch monthly income data from TransportFeePayment
+    transport_fee_payment_data = TransportFeePayment.objects.filter(payment_date__year=year).values('payment_date__month').annotate(
+        income=Sum('amount_paid')
+    ).order_by('payment_date__month')
+
+    # Combine all data into the monthly_data_dict
+    for entry in transport_fee_payment_data:
+        month = entry['payment_date__month']
+        monthly_data_dict[month]['income'] += entry['income']
+
+    # Prepare response data
+    response_data = []
+    for month in range(1, 13):
+        response_data.append({
+            'month': month,
+            'income': monthly_data_dict[month]['income'],
+        })
+
+    return JsonResponse(response_data, safe=False)
+
+
 @login_required
 def filter_payments(request):
     installments  = SchoolFeesInstallment.objects.all()   
-    return render(request, "hod_template/filter_payments.html",{"installments":installments}) 
+    class_levels = ClassLevel.objects.all()
+    return render(request, "hod_template/filter_payments.html",{"installments":installments,"class_levels":class_levels}) 
 
-CLASS_CHOICES = ["Form One", "Form Two", "Form Three", "Form Four"]
+@login_required
+def student_payment_fetch(request):
+    installments  = SchoolFeesInstallment.objects.all()   
+    class_levels = ClassLevel.objects.all()
+    return render(request, "hod_template/student_payment_fetch.html",{"installments":installments,"class_levels":class_levels}) 
+
+def payment_fetch(request):
+    if request.method == 'POST' and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        # Extract form data
+        class_level_id = request.POST.get('class_level')
+        service = request.POST.get('services')
+        payment_status = request.POST.get('payment_status')
+
+        # Get class level
+        try:
+            class_level = ClassLevel.objects.get(id=class_level_id)
+        except ClassLevel.DoesNotExist:
+            return JsonResponse({'error': 'Invalid class level selected'})
+
+        # Fetch all students of the selected class
+        students = Students.objects.filter(class_level_id=class_level_id)
+
+        # Initialize student_results list
+        student_results = []
+
+        # Determine which payment model and template to use based on the selected service
+        if service == 'Madrasa':
+            payments_model = MadrasatulFeePayment
+            template_name = 'hod_template/payment_fetch_madrasa_table.html'
+            for student in students:
+                payments = payments_model.objects.filter(
+                    student=student,
+                    payment_status=payment_status
+                )
+                for payment in payments:
+                    student_results.append({
+                        'student_name': student.full_name,
+                        'class': student.class_level,
+                        'amount_paid': payment.amount_paid,
+                        'amount_remaining': payment.amount_remaining,
+                        'payment_status': payment.payment_status,
+                        'date_paid': payment.payment_date
+                    })
+        
+        elif service == 'Transport':
+            payments_model = TransportFeePayment
+            template_name = 'hod_template/payment_fetch_transport_table.html'
+            for student in students:
+                payments = payments_model.objects.filter(
+                    student=student,
+                    payment_status=payment_status
+                )
+                for payment in payments:
+                    student_results.append({
+                        'student_name': student.full_name,
+                        'class': student.class_level,
+                        'amount_paid': payment.amount_paid,
+                        'amount_remaining': payment.amount_remaining,
+                        'payment_status': payment.payment_status,
+                        'date_paid': payment.payment_date
+                    })
+
+        elif service in ['Registration', 'Boarding']:
+            payments_model = FeePayment
+            template_name = 'hod_template/payment_fetch_registration_boarding_table.html'
+            
+            for student in students:
+                # Filter ClassFee based on the service type
+                fee_type = 'Registration' if service == 'Registration' else 'Boarding'
+                class_fees = ClassFee.objects.filter(
+                    class_level=student.class_level,
+                    fee_type=fee_type
+                )
+                
+                for class_fee in class_fees:
+                    payments = payments_model.objects.filter(
+                        student=student,
+                        class_fee=class_fee,
+                        payment_status=payment_status
+                    )
+                    for payment in payments:
+                        student_results.append({
+                            'student_name': student.full_name,
+                            'class': student.class_level,
+                            'fee_type': class_fee.fee_type,
+                            'amount_paid': payment.amount_paid,
+                            'amount_remaining': payment.amount_remaining,
+                            'payment_status': payment.payment_status,
+                            'date_paid': payment.payment_date
+                        })
+
+        else:
+            return JsonResponse({'error': 'Invalid service selected'})
+
+        # Render the HTML template with the fetched data
+        html_result = render_to_string(template_name, {'student_results': student_results})
+
+        # Return the HTML result as JSON response
+        return JsonResponse({'html_result': html_result})
+
+    return JsonResponse({'error': 'Invalid request'})
+
+
+
+CLASS_CHOICES = ClassLevel.objects.all()
 
 def get_students_by_class(request):
     year = request.GET.get('year')
@@ -216,13 +413,13 @@ def get_students_by_class(request):
 
     # Fetch the student counts for the specified year
     if year:
-        student_data = Students.objects.filter(created_at__year=year).values('current_class').annotate(student_count=models.Count('id'))
+        student_data = Students.objects.filter(created_at__year=year).values('class_level').annotate(student_count=models.Count('id'))
     else:
-        student_data = Students.objects.values('current_class').annotate(student_count=models.Count('id'))
+        student_data = Students.objects.values('class_level').annotate(student_count=models.Count('id'))
 
     # Update the counts in the dictionary
     for entry in student_data:
-        students_by_class[entry['current_class']] = entry['student_count']
+        students_by_class[entry['class_level']] = entry['student_count']
 
     data = {
         'labels': list(students_by_class.keys()),
@@ -234,12 +431,12 @@ def get_students_by_class(request):
 def search_payments(request):
     if request.method == 'POST' and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         # Extract form data
-        selected_class = request.POST.get('selected_class')
+        class_level = request.POST.get('class_level')
         installment_id = request.POST.get('installment_id')
-        payment_status = request.POST.get('payment_status')
-        
+        payment_status = request.POST.get('payment_status')       
+        class_level_id = ClassLevel.objects.get(id=class_level) 
         # Fetch all students of the selected class
-        students = Students.objects.filter(current_class=selected_class)
+        students = Students.objects.filter(class_level_id=class_level_id)
         
         # Create a list to store each student's payment results
         student_results = []
@@ -257,7 +454,7 @@ def search_payments(request):
                 student_results.append({
                     'student_id': student.id,
                     'student_name': student.full_name,
-                    'class': student.current_class,
+                    'class': student.class_level,
                     'installment': payment.installment.installment_name,
                     'amount_paid': payment.amount_paid,
                     'amount_remaining': payment.amount_remaining,
@@ -273,6 +470,8 @@ def search_payments(request):
         return JsonResponse({'html_result': html_result})
     
     return JsonResponse({'error': 'Invalid request'})
+
+
 
 def view_all_payments(request, student_id):
     payments = SchoolFeesPayment.objects.filter(student__id=student_id)
@@ -316,15 +515,15 @@ def get_classwise_fee_payment_data(request):
         # Query to count number of distinct students per class who have made payments
         classwise_data = Students.objects.filter(
             schoolfeespayment__date_paid__year=year
-        ).values('current_class').annotate(
+        ).values('class_level').annotate(
             fee_payments_count=Count('id', distinct=True)
-        ).order_by('current_class')
+        ).order_by('class_level')
 
         # Prepare response data
         response_data = []
         for entry in classwise_data:
             response_data.append({
-                'class_name': entry['current_class'],
+                'class_name': entry['class_level'],
                 'fee_payments_count': entry['fee_payments_count'],
             })
 
@@ -339,6 +538,10 @@ def student_list(request):
         'students': students
     }
     return render(request, 'hod_template/student_list.html', context)
+
+def student_details(request, id):
+    student = get_object_or_404(Students, id=id)
+    return render(request, 'hod_template/student_details.html', {'student': student})
 
 def school_fees_installments_list(request):
     installments = SchoolFeesInstallment.objects.all()
@@ -372,42 +575,43 @@ def expenditure_list(request):
     }
     return render(request, 'hod_template/expenditure.html', context)    
 
-def download_excel_template(request, class_name):
-    class_name = class_name.replace('-', ' ')   
-    # Get students for the given class
-    students = Students.objects.filter(current_class=class_name)
+def download_excel_template(request, class_level_id):
+    # Fetch the class level object
+    class_level = get_object_or_404(ClassLevel, id=class_level_id)
+    
+    # Get students and subjects for the given class level
+    students = Students.objects.filter(class_level=class_level)
+    subjects = Subject.objects.filter(class_level=class_level)
 
-    # Create a new workbook
+    # Create a new workbook and select the active worksheet
     wb = Workbook()
     ws = wb.active
 
     # Add headers for the Excel sheet
-    headers = ['Student']
-    subject_scores = SujbectWiseResults._meta.get_fields()[2:-5]  # Exclude student and timestamp fields
-    for field in subject_scores:
-        headers.append(field.name.replace('_score', '').capitalize())  # Get subject name from field name
+    headers = ['Student Registration Number', 'Student Name']
+    for subject in subjects:
+        headers.append(subject.subject_name.capitalize())  # Add subject names as headers
     ws.append(headers)
 
-    # Add student names and zero scores for each subject
+    # Add student registration numbers, names, and zero scores for each subject
     for student in students:
-        row_data = [student.full_name]
-        for _ in subject_scores:
-            row_data.append(0)  # Populate each subject column with zero value
+        row_data = [student.registration_number, student.full_name]  # Add student registration number and name
+        for _ in subjects:
+            row_data.append(0)  # Add a zero value for each subject
         ws.append(row_data)
 
     # Save the workbook in memory
-    from io import BytesIO
     output = BytesIO()
     wb.save(output)
     output.seek(0)
 
     # Set response headers for Excel file download
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename={class_name}_template.xlsx'
+    response = HttpResponse(
+        output.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{class_level.class_name}_template.xlsx"'
     
-    # Write workbook data to response
-    response.write(output.getvalue())
-
     return response
 
 @login_required
@@ -435,9 +639,11 @@ def student_subject_wise_result_page(request,student_id):
 @login_required    
 def students_wise_result_page(request):
     exam_types = ExamType.objects.all()
+    class_levels = ClassLevel.objects.all()
     distinct_dates= Result.objects.order_by('date_of_exam').values_list('date_of_exam', flat=True).distinct()   
     return render(request, 'hod_template/student_results.html',
                   {                   
+                      'class_levels': class_levels,
                       'exam_types': exam_types,
                       'distinct_dates': distinct_dates,
                    })
@@ -500,7 +706,7 @@ def save_student(request):
         student_id = request.POST.get('student_id')
         registration_number = request.POST.get('registration_number')
         full_name = request.POST.get('full_name')
-        current_class = request.POST.get('current_class')
+        class_level = request.POST.get('class_level')
         date_of_birth = request.POST.get('date_of_birth')
         gender = request.POST.get('gender')
         phone_number = request.POST.get('phone_number')
@@ -524,7 +730,7 @@ def save_student(request):
             student = Students.objects.get(pk=student_id)
             student.registration_number = registration_number
             student.full_name = full_name
-            student.current_class = current_class
+            student.class_level = class_level
             student.date_of_birth =  date_of_birth
             student.gender = gender
             student.phone_number = phone_number
@@ -536,7 +742,7 @@ def save_student(request):
             student = Students(
             registration_number=registration_number,
             full_name=full_name,
-            current_class=current_class,
+            class_level=class_level,
             date_of_birth=date_of_birth,
             gender=gender,
             phone_number=phone_number,
@@ -558,7 +764,7 @@ def add_results(request):
         exam_type_id = request.POST.get('exam_type')        
         marks = request.POST.get('marks')
         date_of_exam = request.POST.get('date_of_exam')
-        selected_class = request.POST.get('selected_class')
+        class_level = request.POST.get('class_level')
         total_marks = request.POST.get('total_marks')
         exam_id = request.POST.get('exam_id')  # For editing existing result
         
@@ -572,7 +778,7 @@ def add_results(request):
             student_id=student_id,
             subject_id=subject_id,
             exam_type_id=exam_type_id,
-            selected_class=selected_class
+            class_level=class_level
         ).exists()
         
         if result_exists:
@@ -587,7 +793,7 @@ def add_results(request):
             result.exam_type = exam_type
             result.marks = marks
             result.date_of_exam = date_of_exam          
-            result.selected_class = selected_class
+            result.class_level = class_level
             result.total_marks = total_marks
             result.save()
         else:
@@ -598,7 +804,7 @@ def add_results(request):
                 exam_type=exam_type,
                 marks=marks,
                 date_of_exam=date_of_exam,
-                selected_class=selected_class,
+                class_level=class_level,
                 total_marks=total_marks,
             )
             result.save()
@@ -702,7 +908,7 @@ def student_subject_wise_result(request):
         student = Students.objects.get(id=student_id)
         # Replace 'Students' with your actual student model
         
-        form_i_students = Students.objects.filter(current_class=student.current_class)
+        form_i_students = Students.objects.filter(class_level=student.class_level)
         total_students = form_i_students.count()
         # Query the results for the specific student
         exam_type = get_object_or_404(ExamType, id=exam_type_id)
@@ -711,20 +917,20 @@ def student_subject_wise_result(request):
         exam_info = StudentExamInfo.objects.filter(
             student=student,
             exam_type=exam_type,
-            selected_class=student.current_class
+            class_level=student.class_level
         ).first()
 
         # Retrieve the StudentPositionInfo for the specified student, exam type, and current class
         position_info = StudentPositionInfo.objects.filter(
             student=student,
             exam_type=exam_type,
-            current_class=student.current_class
+            class_level=student.class_level
         ).first()
 
         exam_metrics, created = ExamMetrics.objects.get_or_create(
                     student=student,
                     exam_type=exam_type,
-                    selected_class=student.current_class,
+                    class_level=student.class_level,
                 )
         total_marks = exam_metrics.total_marks
         average = exam_metrics.average
@@ -771,12 +977,12 @@ def download_student_results_excel(request, student_id, exam_type_id, year):
 
     # Query results
     results = Result.objects.filter(student=student, exam_type=exam_type, date_of_exam=year)
-    exam_info = StudentExamInfo.objects.filter(student=student, exam_type=exam_type, selected_class=student.current_class).first()
-    position_info = StudentPositionInfo.objects.filter(student=student, exam_type=exam_type, current_class=student.current_class).first()
+    exam_info = StudentExamInfo.objects.filter(student=student, exam_type=exam_type, class_level=student.class_level).first()
+    position_info = StudentPositionInfo.objects.filter(student=student, exam_type=exam_type, class_level=student.class_level).first()
     exam_metrics, created = ExamMetrics.objects.get_or_create(
                     student=student,
                     exam_type=exam_type,
-                    selected_class=student.current_class,
+                    class_level=student.class_level,
                 )
     total_marks = exam_metrics.total_marks
     average = exam_metrics.average
@@ -891,28 +1097,28 @@ def delete_result_endpoint(request):
 
 def student_results_view(request):
     if request.method == 'POST' and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-        # Extract form data
-        selected_class = request.POST.get('selected_class')
+        # Extract form data from POST request
+        class_level = request.POST.get('class_level')
         exam_type_id = request.POST.get('exam_type_id')
         date_of_exam = request.POST.get('date_of_exam')
         
-        # Fetch all students
-        students = Students.objects.filter(current_class=selected_class)
+        # Fetch all students for the given class level
+        students = Students.objects.filter(class_level=class_level)
         
-        # Fetch all subjects
-        subjects = Subject.objects.all()
+        # Fetch all subjects for the given class level
+        subjects = Subject.objects.filter(class_level=class_level)
         
-        # Create a list to store each student's results and metrics
+        # List to store each student's results and metrics
         student_results = []
         
         # Iterate over each student
         for student in students:
-            # Fetch results for the current student filtered by exam type and date
+            # Fetch results for the current student filtered by exam type, date, and class level
             results = Result.objects.filter(
                 student=student,
                 exam_type_id=exam_type_id,
                 date_of_exam=date_of_exam,
-                selected_class=selected_class,
+                class_level=class_level,
             )
             
             # Initialize variables for position, division, total grade points, total marks, average, grade, and remark
@@ -930,7 +1136,7 @@ def student_results_view(request):
                 position_info, created = StudentPositionInfo.objects.get_or_create(
                     student=student,
                     exam_type=result.exam_type,
-                    current_class=result.selected_class,
+                    class_level=result.class_level,
                 )
                 position = position_info.position
                 
@@ -938,7 +1144,7 @@ def student_results_view(request):
                 student_exam_info, created = StudentExamInfo.objects.get_or_create(
                     student=student,
                     exam_type=result.exam_type,
-                    selected_class=result.selected_class,
+                    class_level=result.class_level,
                 )
                 division = student_exam_info.division
                 total_grade_points = student_exam_info.total_grade_points
@@ -947,7 +1153,7 @@ def student_results_view(request):
                 exam_metrics, created = ExamMetrics.objects.get_or_create(
                     student=student,
                     exam_type=result.exam_type,
-                    selected_class=result.selected_class,
+                    class_level=result.class_level,
                 )
                 total_marks = exam_metrics.total_marks
                 average = exam_metrics.average
@@ -975,6 +1181,7 @@ def student_results_view(request):
             # Append student results and metrics to the list
             student_results.append({
                 'student': student,
+                'subjects': subjects,
                 'total_marks': total_marks,
                 'average': average,
                 'grademetrics': grademetrics,
@@ -986,10 +1193,24 @@ def student_results_view(request):
             })
         
         # Render the HTML template with the fetched data
-        html_result = render_to_string('hod_template/student_results_table.html', {'student_results': student_results})
+        html_result = render_to_string('hod_template/student_results_table.html', {'student_results': student_results,'subjects':subjects})
         
         # Return the HTML result as JSON response
         return JsonResponse({'html_result': html_result})
+    
+
+def fetch_students_per_class(request):
+    # Get the total number of students for each class level
+    class_levels = Students.objects.values('class_level__class_name').annotate(total_students=Count('id'))
+    
+    # Prepare data for JSON response
+    labels = [item['class_level__class_name'] for item in class_levels]
+    data = [item['total_students'] for item in class_levels]
+    
+    return JsonResponse({
+        'labels': labels,
+        'data': data
+    })    
 
 
 @login_required
@@ -1002,9 +1223,9 @@ def exam_type_to_view_class(request, exam_type_id):
     try:
         # Retrieve the exam type object
         exam_type = ExamType.objects.get(pk=exam_type_id)
-        
+        class_levels = ClassLevel.objects.all()
         # Pass the exam type object to the template
-        return render(request, 'hod_template/class_wise_results.html', {'exam_type': exam_type})
+        return render(request, 'hod_template/class_wise_results.html', {'exam_type': exam_type,"class_levels":class_levels})
     except ExamType.DoesNotExist:
         # Handle the case where the exam type does not exist
         return redirect('exam_type_list') 
@@ -1012,85 +1233,62 @@ def exam_type_to_view_class(request, exam_type_id):
 
 
 @login_required
-def view_student_to_add_result(request, exam_type_id, class_name): 
-    className = class_name   
-    class_name = class_name.replace('-', ' ')    
-    # Fetch all students for the specified class
-    students = Students.objects.filter(current_class=class_name)
-    exam_type = ExamType.objects.get(pk=exam_type_id)  
-    # Fetch all subjects
-    subjects = Subject.objects.all()
+def view_student_to_add_result(request, exam_type_id, class_level_id):
+    class_level = ClassLevel.objects.get(id=class_level_id)
+    students = Students.objects.filter(class_level=class_level)
+    exam_type = ExamType.objects.get(pk=exam_type_id)
+    subjects = Subject.objects.filter(class_level=class_level)
     
-    # Create a list to store each student's results and metrics
     student_results = []
-    
-    # Iterate over each student
+
     for student in students:
-        # Fetch results for the current student filtered by exam type and class
         results = Result.objects.filter(
             student=student,
             exam_type_id=exam_type_id,               
-            selected_class=class_name,
+            class_level=class_level,
         )
         
-        # Initialize variables for position, division, total grade points, total marks, average, grade, and remark
-        position = None
-        division = None
-        total_grade_points = None
-        total_marks = None
-        average = None
-        grademetrics = None
-        remark = None
-        
-        # Iterate over each result for the current student
-        for result in results:
-            # Fetch or calculate position
-            position_info, created = StudentPositionInfo.objects.get_or_create(
+        position, division, total_grade_points = None, None, None
+        total_marks, average, grademetrics, remark = None, None, None, None
+
+        # Fetch or calculate metrics
+        if results.exists():
+            position_info, _ = StudentPositionInfo.objects.get_or_create(
                 student=student,
-                exam_type=result.exam_type,
-                current_class=result.selected_class,
+                exam_type=exam_type,
+                class_level=class_level,
             )
             position = position_info.position
-            
-            # Fetch or calculate division
-            student_exam_info, created = StudentExamInfo.objects.get_or_create(
+
+            student_exam_info, _ = StudentExamInfo.objects.get_or_create(
                 student=student,
-                exam_type=result.exam_type,
-                selected_class=result.selected_class,
+                exam_type=exam_type,
+                class_level=class_level,
             )
             division = student_exam_info.division
             total_grade_points = student_exam_info.total_grade_points
-            
-            # Fetch or calculate ExamMetrics
-            exam_metrics, created = ExamMetrics.objects.get_or_create(
+
+            exam_metrics, _ = ExamMetrics.objects.get_or_create(
                 student=student,
-                exam_type=result.exam_type,
-                selected_class=result.selected_class,
+                exam_type=exam_type,
+                class_level=class_level,
             )
             total_marks = exam_metrics.total_marks
             average = exam_metrics.average
             grademetrics = exam_metrics.grade
             remark = exam_metrics.remark
-            exam_type = result.exam_type
-        
-        # Create a dictionary to store subject-wise results for the current student
+
+        # Prepare subject results
         student_subject_results = {}
-        
-        # Iterate over each subject
         for subject in subjects:
-            # Check if there is a result for the current subject and student
             result = results.filter(subject=subject).first()
             if result:
-                # If result exists, store the grade
                 grade = result.determine_grade()
             else:
-                # If result does not exist, mark as 'Not Assigned'
                 grade = ''
             
-            # Store subject-wise grades in the dictionary
             student_subject_results[subject.subject_name] = grade
-        
-        # Append student results and metrics to the list
+
         student_results.append({
             'student': student,
             'total_marks': total_marks,
@@ -1102,15 +1300,15 @@ def view_student_to_add_result(request, exam_type_id, class_name):
             'remark': remark,
             'student_subject_results': student_subject_results,
         })
-    
-    # Render the HTML template with the fetched data
+
     return render(request, 'hod_template/class_wise_students_list.html', {
-        'student_results': student_results, 
-        'class_name': class_name,
-        'className': className,
-        'subjects':subjects,
-        'exam_type':exam_type,
-        })
+        'student_results': student_results,
+        'class_name': class_level.class_name,
+        'className': class_level.class_name,
+        'class_level': class_level,
+        'subjects': subjects,
+        'exam_type': exam_type,
+    })
 
 
 @csrf_exempt
@@ -1142,7 +1340,7 @@ def add_student_result(request):
                     student_id=data.get('student_id'),
                     subject_id=subject_id,
                     exam_type_id=data.get('exam_type'),
-                    selected_class=data.get('class_name')
+                    class_level=data.get('class_name')
                 ).first()
                 student = Students.objects.get(id=data.get('student_id'))
                 if existing_result:
@@ -1155,7 +1353,7 @@ def add_student_result(request):
                     exam_type_id=data.get('exam_type'),
                     marks=marks,
                     date_of_exam=data.get('date_of_exam'),
-                    selected_class=data.get('class_name'),
+                    class_level=data.get('class_name'),
                     total_marks=100
                 )
 
@@ -1176,7 +1374,7 @@ def save_student_result(request):
             exam_type_id = request.POST.get('exam_type_id')
             date_of_exam = request.POST.get('date_of_exam')
             student = Students.objects.get(id=student_id)
-            selected_class = student.current_class
+            class_level = student.class_level
 
             # Check if required fields are missing
             if not all([student_id, exam_type_id, date_of_exam]):
@@ -1202,7 +1400,7 @@ def save_student_result(request):
             result = SujbectWiseResults(
                 student_id=student_id,
                 exam_type_id=exam_type_id,
-                selected_class=selected_class,
+                class_level=class_level,
                 history_score=history_score,
                 english_score=english_score,
                 biology_score=biology_score,
@@ -1258,95 +1456,6 @@ def manage_staff(request):
         "subjects":subjects,
         })      
 
-@csrf_exempt
-def add_staff_record(request):
-    if request.method == 'POST':
-        # Extract form data from the request
-        first_name = request.POST.get('first_name')
-        middle_name = request.POST.get('middle_name')
-        last_name = request.POST.get('last_name')
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        current_class = request.POST.get('current_class')
-        subjects = request.POST.getlist('subject')
-        address = request.POST.get('address')
-        gender = request.POST.get('gender')
-        staff_role = request.POST.get('staff_role')
-        dob = request.POST.get('dob')
-        doe = request.POST.get('doe')
-        phone = request.POST.get('phone')
-        staff_id = request.POST.get('staff_id')
-        current_profile_pic = request.POST.get('current_profile_pic')  # Get the current profile picture URL
-
-        # Handling staff photo upload
-        staff_photo_url = current_profile_pic  # Initialize with the current profile picture URL
-        accepted_image_formats = ['image/jpeg', 'image/jpg', 'image/png']
-        max_file_size = 5 * 1024 * 1024
-        staff_photo = request.FILES.get('staff_photo')
-        if staff_photo:
-            if staff_photo.content_type not in accepted_image_formats or staff_photo.size > max_file_size:
-                return JsonResponse({'status': False, 'message': 'File must be PNG, JPEG, or JPG and should not exceed 5MB.'})
-            fs = FileSystemStorage()
-            staff_photo_name = fs.save('staff_profile_pic/' + staff_photo.name, staff_photo)
-            staff_photo_url = fs.url(staff_photo_name)
-
-        try:
-            if staff_id:
-                # Editing an existing staff record
-                staff = Staffs.objects.get(pk=staff_id)
-                user = staff.admin
-                # Update user data
-                user.first_name = first_name
-                user.last_name = last_name
-                user.save()
-                # Update staff data
-                staff.middle_name = middle_name
-                staff.profile_pic = staff_photo_url
-                staff.address = address
-                staff.current_class = current_class
-                staff.gender = gender
-                staff.date_of_birth = dob
-                staff.date_of_employment = doe
-                staff.staff_role = staff_role
-                staff.phone_number = phone
-                staff.save()
-                # Update subjects
-                staff.subjects.set(subjects)
-                return JsonResponse({'status': True, 'message': 'Staff record updated successfully.'})
-            else:
-                if CustomUser.objects.filter(username=username).exists():
-                    return JsonResponse({'status': False, 'message': 'Username already exists.'})
-
-                if CustomUser.objects.filter(email=email).exists():
-                    return JsonResponse({'status': False, 'message': 'Email already exists.'})
-
-                # Adding a new staff record
-                user = CustomUser.objects.create_user(
-                    last_name=last_name,
-                    first_name=first_name,
-                    username=username,
-                    email=email,
-                    password=password,
-                    user_type=2
-                )
-                staff = user.staffs
-                staff.date_of_birth = dob
-                staff.date_of_employment = doe
-                staff.gender = gender
-                staff.middle_name = middle_name
-                staff.current_class = current_class
-                staff.address = address
-                staff.phone_number = phone
-                staff.staff_role = staff_role
-                staff.profile_pic = staff_photo_url
-                # Save the staff record
-                staff.save()
-                staff.subjects.set(subjects)
-                return JsonResponse({'status': True, 'message': 'Staff record added successfully.'})
-        except Exception as e:
-            return JsonResponse({'status': False, 'message': str(e)}, status=400)
-    return JsonResponse({'status': False, 'message': 'Invalid request method.'}, status=400)
 
 
 @csrf_exempt
@@ -1494,9 +1603,11 @@ def check_username_exist(request):
 def admin_view_class_attendance(request):
     admin = request.user
     attendances=ClassAttendance.objects.all()  
+    class_levels = ClassLevel.objects.all()
     return render(request, "hod_template/admin_view_class_attendance.html", {          
          "admin": admin,
         "attendances": attendances,
+        "class_levels": class_levels,
     })
 
  
@@ -1504,8 +1615,8 @@ def admin_view_class_attendance(request):
 @csrf_exempt
 def admin_get_class_student_attendance_data(request):  
     date_id = request.POST.get("date") 
-    current_class = request.POST.get("current_class")    
-    students = Students.objects.filter(current_class=current_class)   
+    class_level = request.POST.get("class_level")    
+    students = Students.objects.filter(class_level=class_level)   
     attendance = ClassAttendance.objects.filter(id=date_id)
     # Fetch attendance data for the given date and class
     attendance_data = StudentClassAttendance.objects.filter(
@@ -1638,3 +1749,740 @@ def add_or_edit_student(request, pk=None):
 
     return render(request, 'hod_template/add_student.html', {'form': form, 'student': student})
 
+class ClassLevelCreateUpdateView(View):
+    def get(self, request, *args, **kwargs):
+        # Check if there's a 'pk' in the URL kwargs, indicating edit mode
+        class_level = None
+        if 'pk' in kwargs:
+            class_level = get_object_or_404(ClassLevel, pk=kwargs['pk'])
+            form = ClassLevelForm(instance=class_level)
+        else:
+            form = ClassLevelForm()
+
+        return render(request, 'hod_template/add_classlevel_form.html', {'form': form, 'is_edit': class_level is not None})
+    
+    def post(self, request, *args, **kwargs):
+        # Check if 'pk' is in the URL kwargs, to handle form submission for edit mode
+        class_level = None
+        if 'pk' in kwargs:
+            class_level = get_object_or_404(ClassLevel, pk=kwargs['pk'])
+            form = ClassLevelForm(request.POST, instance=class_level)
+        else:
+            form = ClassLevelForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+
+            # Determine which button was clicked
+            action = request.POST.get('action')
+            if action == 'save':
+                return redirect('admin_classlevel_list')
+            elif action == 'save_and_continue':
+                return redirect('admin_classlevel_create')
+
+        # Re-render the form with validation errors
+        return render(request, 'hod_template/add_classlevel_form.html', {'form': form, 'is_edit': class_level is not None})
+
+class ClassLevelListView(ListView):
+    model = ClassLevel
+    template_name = 'hod_template/classlevel_list.html'
+    context_object_name = 'class_levels'
+    paginate_by = 20  # Optional: If you want to paginate the results
+
+    def get_queryset(self):
+        # Customize the queryset if needed, otherwise it will return all records
+        return ClassLevel.objects.all()
+    
+
+    
+    
+class ClassLevelDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        class_level = get_object_or_404(ClassLevel, pk=pk)
+        class_level.delete()
+        return redirect('admin_classlevel_list')  
+    
+class SubjectDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        class_level = get_object_or_404(Subject, pk=pk)
+        class_level.delete()
+        return redirect('admin_manage_subject')  
+class SchoolFeesInstallmentDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        class_level = get_object_or_404(SchoolFeesInstallment, pk=pk)
+        class_level.delete()
+        return redirect('admin_installment_list')  
+    
+class SubjectCreateUpdateView(View):
+    def get(self, request, *args, **kwargs):
+        subject = None
+        if 'pk' in kwargs:
+            subject = get_object_or_404(Subject, pk=kwargs['pk'])
+            form = SubjectForm(instance=subject)
+        else:
+            form = SubjectForm()
+
+        return render(request, 'hod_template/add_subject_form.html', {'form': form, 'is_edit': subject is not None})
+    
+    def post(self, request, *args, **kwargs):
+        subject = None
+        if 'pk' in kwargs:
+            subject = get_object_or_404(Subject, pk=kwargs['pk'])
+            form = SubjectForm(request.POST, instance=subject)
+        else:
+            form = SubjectForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+
+            action = request.POST.get('action')
+            if action == 'save':
+                return redirect('admin_manage_subject')
+            elif action == 'save_and_continue':
+                return redirect('admin_subject_create')
+
+        return render(request, 'hod_template/add_subject_form.html', {'form': form, 'is_edit': subject is not None})    
+    
+class SchoolFeesInstallmentListView(ListView):
+    model = SchoolFeesInstallment
+    template_name = 'hod_template/school_fees_installments_list.html'
+    context_object_name = 'installments'
+    paginate_by = 20  # Optional: If you want to paginate the results
+
+    def get_queryset(self):
+        # Customize the queryset if needed, otherwise it will return all records
+        return SchoolFeesInstallment.objects.all()
+        
+class SchoolFeesInstallmentCreateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            installment = get_object_or_404(SchoolFeesInstallment, pk=pk)
+            form = SchoolFeesInstallmentForm(instance=installment)
+        else:
+            form = SchoolFeesInstallmentForm()
+        return render(request, 'hod_template/add_installment_form.html', {'form': form})
+    
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            installment = get_object_or_404(SchoolFeesInstallment, pk=pk)
+            form = SchoolFeesInstallmentForm(request.POST, instance=installment)
+        else:
+            form = SchoolFeesInstallmentForm(request.POST)
+        
+        if form.is_valid():
+            form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                messages.success(request, 'Installment saved successfully!')
+                return redirect('admin_installment_list')
+            elif action == 'save_and_continue':
+                messages.success(request, 'Installment saved successfully! You can add another one.')
+                return redirect('admin_installment_create')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+
+        return render(request, 'hod_template/add_installment_form.html', {'form': form})     
+    
+    
+class FeeStructureListView(ListView):
+    model = FeeStructure
+    template_name = 'hod_template/school_fees_structure_list.html'
+    context_object_name = 'fee_structures'
+    paginate_by = 20  # Optional: If you want to paginate the results
+
+    def get_queryset(self):
+        # Customize the queryset if needed, otherwise it will return all records
+        return FeeStructure.objects.all()   
+    
+class FeeStructureDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        class_level = get_object_or_404(FeeStructure, pk=pk)
+        class_level.delete()
+        return redirect('admin_fee_structure_list')       
+    
+class FeeStructureCreateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            fee_structure = get_object_or_404(FeeStructure, pk=pk)
+            form = FeeStructureForm(instance=fee_structure)
+        else:
+            form = FeeStructureForm()
+
+        return render(request, 'hod_template/add_fee_structure_form.html', {'form': form})
+
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            fee_structure = get_object_or_404(FeeStructure, pk=pk)
+            form = FeeStructureForm(request.POST, instance=fee_structure)
+        else:
+            form = FeeStructureForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                return redirect('admin_fee_structure_list')
+            elif action == 'save_and_continue':
+                return redirect('admin_fee_structure_create')
+
+        return render(request, 'hod_template/add_fee_structure_form.html', {'form': form})   
+    
+    
+class ExpenditureListView(View):
+    def get(self, request, *args, **kwargs):
+        expenditures = Expenditure.objects.all()
+        return render(request, 'hod_template/expenditure_list.html', {'expenditures': expenditures})   
+    
+class ExpenditureDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        expenditure = get_object_or_404(Expenditure, pk=pk)
+        expenditure.delete()
+        return redirect('admin_expenditure_list')       
+    
+class ExpenditureCreateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            expenditure = get_object_or_404(Expenditure, pk=pk)
+            form = ExpenditureForm(instance=expenditure)
+        else:
+            form = ExpenditureForm()
+
+        return render(request, 'hod_template/add_expenditure_form.html', {'form': form})
+
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            expenditure = get_object_or_404(Expenditure, pk=pk)
+            form = ExpenditureForm(request.POST, instance=expenditure)
+        else:
+            form = ExpenditureForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                return redirect('admin_expenditure_list')  # Adjust the redirect to match your URL name
+            elif action == 'save_and_continue':
+                return redirect('admin_add_expenditure')  # Adjust the redirect to match your URL name
+
+        return render(request, 'hod_template/add_expenditure_form.html', {'form': form}) 
+    
+    
+class ClassFeeListView(ListView):
+    model = ClassFee
+    template_name = 'hod_template/class_fee_list.html'
+    context_object_name = 'class_fees'
+    paginate_by = 10  # Adjust the number of items per page if needed
+
+    def get_queryset(self):
+        return ClassFee.objects.all().order_by('class_level', 'fee_type')
+    
+class ClassFeeDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        class_fee = get_object_or_404(ClassFee, pk=pk)
+        class_fee.delete()
+        return redirect('admin_class_fee_list')      
+        
+class ClassFeeCreateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            class_fee = get_object_or_404(ClassFee, pk=pk)
+            form = ClassFeeForm(instance=class_fee)
+        else:
+            form = ClassFeeForm()
+
+        return render(request, 'hod_template/add_class_fee_form.html', {'form': form})
+
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            class_fee = get_object_or_404(ClassFee, pk=pk)
+            form = ClassFeeForm(request.POST, instance=class_fee)
+        else:
+            form = ClassFeeForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                return redirect('admin_class_fee_list')  # Adjust the redirect to match your URL name
+            elif action == 'save_and_continue':
+                return redirect('admin_add_class_fee')  # Adjust the redirect to match your URL name
+
+        return render(request, 'hod_template/add_class_fee_form.html', {'form': form})    
+    
+
+
+class MadrasatulFeeListView(ListView):
+    model = MadrasatulFee
+    template_name = 'hod_template/madrasatul_fee_list.html'
+    context_object_name = 'fees'
+    paginate_by = 10  # Optional: to paginate the list if you have many records
+
+    def get_queryset(self):
+        return MadrasatulFee.objects.select_related('class_level').order_by('class_level', 'fee_amount')
+    
+class MadrasatulFeeDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        class_fee = get_object_or_404(MadrasatulFee, pk=pk)
+        class_fee.delete()
+        return redirect('admin_madrasatul_fee_list')        
+    
+class MadrasatulFeeCreateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            fee = get_object_or_404(MadrasatulFee, pk=pk)
+            form = MadrasatulFeeForm(instance=fee)
+        else:
+            form = MadrasatulFeeForm()
+
+        return render(request, 'hod_template/add_madrasatul_fee_form.html', {'form': form})
+
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            fee = get_object_or_404(MadrasatulFee, pk=pk)
+            form = MadrasatulFeeForm(request.POST, instance=fee)
+        else:
+            form = MadrasatulFeeForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                messages.success(request, 'Madrasatul Fee saved successfully!')
+                return redirect('admin_madrasatul_fee_list')
+            elif action == 'save_and_continue':
+                messages.success(request, 'Madrasatul Fee saved successfully! You can add another fee.')
+                return redirect('admin_madrasatul_fee_create')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+
+        return render(request, 'hod_template/add_madrasatul_fee_form.html', {'form': form})    
+    
+    
+class TransportFeeListView(ListView):
+    model = TransportFee
+    template_name = 'hod_template/transport_fee_list.html'
+    context_object_name = 'transport_fees'
+    paginate_by = 10  # Optional: to paginate the list if you have many records
+
+
+    
+class TransportFeeDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        class_fee = get_object_or_404(TransportFee, pk=pk)
+        class_fee.delete()
+        return redirect('admin_transport_fee_list')          
+
+
+class TransportFeeCreateUpdateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            transport_fee = get_object_or_404(TransportFee, pk=pk)
+            form = TransportFeeForm(instance=transport_fee)
+            context = {
+                'form': form,
+                'is_edit': True
+            }
+        else:
+            form = TransportFeeForm()
+            context = {
+                'form': form,
+                'is_edit': False
+            }
+        return render(request, 'hod_template/add_transport_fee_form.html', context)
+    
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            transport_fee = get_object_or_404(TransportFee, pk=pk)
+            form = TransportFeeForm(request.POST, instance=transport_fee)
+        else:
+            form = TransportFeeForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                messages.success(request, 'Transport Fee has been saved successfully!')
+                return redirect('admin_transport_fee_list')
+            elif action == 'save_and_continue':
+                messages.success(request, 'Transport Fee has been saved! You can add another one.')
+                return redirect('admin_transport_fee_create')
+
+        context = {
+            'form': form,
+            'is_edit': pk is not None
+        }
+        return render(request, 'hod_template/add_transport_fee_form.html', context)
+    
+
+class FeePaymentListView(ListView):
+    model = FeePayment
+    template_name = 'hod_template/fee_payment_list.html'
+    context_object_name = 'fee_payments'
+    paginate_by = 10  # Adjust the number as needed
+
+    def get_queryset(self):
+        return FeePayment.objects.select_related('student', 'class_fee').order_by('-payment_date')
+    
+
+class FeePaymentDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        fee_payment = get_object_or_404(FeePayment, pk=pk)
+        fee_payment.delete()
+        return redirect('admin_fee_payment_list')          
+    
+class FeePaymentCreateUpdateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            fee_payment = get_object_or_404(FeePayment, pk=pk)
+            form = FeePaymentForm(instance=fee_payment)
+            context = {
+                'form': form,
+                'is_edit': True
+            }
+        else:
+            form = FeePaymentForm()
+            context = {
+                'form': form,
+                'is_edit': False
+            }
+        return render(request, 'hod_template/add_fee_payment_form.html', context)
+    
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            fee_payment = get_object_or_404(FeePayment, pk=pk)
+            form = FeePaymentForm(request.POST, instance=fee_payment)
+        else:
+            form = FeePaymentForm(request.POST)
+
+        if form.is_valid():
+            fee_payment = form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                messages.success(request, 'Fee Payment has been saved successfully!')
+                return redirect('admin_fee_payment_list')
+            elif action == 'save_and_continue':
+                messages.success(request, 'Fee Payment has been saved! You can add another one.')
+                return redirect('admin_fee_payment_create')
+
+        context = {
+            'form': form,
+            'is_edit': pk is not None
+        }
+        return render(request, 'hod_template/add_fee_payment_form.html', context)  
+    
+
+class MadrasatulFeePaymentCreateUpdateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            madrasatul_fee_payment = get_object_or_404(MadrasatulFeePayment, pk=pk)
+            form = MadrasatulFeePaymentForm(instance=madrasatul_fee_payment)
+            context = {
+                'form': form,
+                'is_edit': True
+            }
+        else:
+            form = MadrasatulFeePaymentForm()
+            context = {
+                'form': form,
+                'is_edit': False
+            }
+        return render(request, 'hod_template/add_madrasatul_fee_payment_form.html', context)
+    
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            madrasatul_fee_payment = get_object_or_404(MadrasatulFeePayment, pk=pk)
+            form = MadrasatulFeePaymentForm(request.POST, instance=madrasatul_fee_payment)
+        else:
+            form = MadrasatulFeePaymentForm(request.POST)
+
+        if form.is_valid():
+            fee_payment = form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                messages.success(request, 'Madrasatul Fee Payment has been saved successfully!')
+                return redirect('admin_madrasatul_fee_payment_list')
+            elif action == 'save_and_continue':
+                messages.success(request, 'Madrasatul Fee Payment has been saved! You can add another one.')
+                return redirect('admin_madrasatul_fee_payment_create')
+
+        context = {
+            'form': form,
+            'is_edit': pk is not None
+        }
+        return render(request, 'hod_template/add_madrasatul_fee_payment_form.html', context)  
+    
+
+class MadrasatulFeePaymentListView(ListView):
+    model = MadrasatulFeePayment
+    template_name = 'hod_template/madrasatul_fee_payment_list.html'
+    context_object_name = 'fee_payments'
+    paginate_by = 10  # Optional: to paginate the list view
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # You can add filters here if needed
+        return queryset        
+    
+  
+    
+class MadrasatulFeePaymentDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        fee_payment = get_object_or_404(MadrasatulFeePayment, pk=pk)
+        fee_payment.delete()
+        return redirect('admin_madrasatul_fee_payment_list')               
+    
+class TransportFeePaymentCreateUpdateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            transport_fee_payment = get_object_or_404(TransportFeePayment, pk=pk)
+            form = TransportFeePaymentForm(instance=transport_fee_payment)
+            context = {
+                'form': form,
+                'is_edit': True
+            }
+        else:
+            form = TransportFeePaymentForm()
+            context = {
+                'form': form,
+                'is_edit': False
+            }
+        return render(request, 'hod_template/add_transport_fee_payment_form.html', context)
+    
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            transport_fee_payment = get_object_or_404(TransportFeePayment, pk=pk)
+            form = TransportFeePaymentForm(request.POST, instance=transport_fee_payment)
+        else:
+            form = TransportFeePaymentForm(request.POST)
+
+        if form.is_valid():
+            transport_fee_payment = form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                messages.success(request, 'Transport Fee Payment has been saved successfully!')
+                return redirect('admin_transport_fee_payment_list')
+            elif action == 'save_and_continue':
+                messages.success(request, 'Transport Fee Payment has been saved! You can add another one.')
+                return redirect('admin_transport_fee_payment_create')
+
+        context = {
+            'form': form,
+            'is_edit': pk is not None
+        }
+        return render(request, 'hod_template/add_transport_fee_payment_form.html', context) 
+    
+class TransportFeePaymentListView(ListView):
+    model = TransportFeePayment
+    template_name = 'hod_template/transport_fee_payment_list.html'
+    context_object_name = 'transport_fee_payments'
+    paginate_by = 10       
+    
+class TransportFeePaymentDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        fee_payment = get_object_or_404(TransportFeePayment, pk=pk)
+        fee_payment.delete()
+        return redirect('admin_transport_fee_payment_list') 
+          
+    
+class ResultCreateUpdateView(View):
+    def get(self, request, exam_type_id, class_level_id, pk=None, *args, **kwargs):
+        exam_type = get_object_or_404(ExamType, pk=exam_type_id)
+        class_level = get_object_or_404(ClassLevel, pk=class_level_id)
+        
+        # Filter subjects based on the class level
+        subjects = Subject.objects.filter(class_level=class_level)
+
+        if pk:
+            result = get_object_or_404(Result, pk=pk)
+            form = ResultForm(instance=result, exam_type=exam_type, class_level=class_level)
+            context = {'form': form, 'is_edit': True}
+        else:
+            form = ResultForm(exam_type=exam_type, class_level=class_level)
+            context = {'form': form, 'is_edit': False}
+        
+        context['subjects'] = subjects
+        return render(request, 'hod_template/add_manage_result.html', context)
+
+    def post(self, request, exam_type_id, class_level_id, pk=None, *args, **kwargs):
+        exam_type = get_object_or_404(ExamType, pk=exam_type_id)
+        class_level = get_object_or_404(ClassLevel, pk=class_level_id)
+
+        if pk:
+            result = get_object_or_404(Result, pk=pk)
+            form = ResultForm(request.POST, instance=result, exam_type=exam_type, class_level=class_level)
+        else:
+            form = ResultForm(request.POST, exam_type=exam_type, class_level=class_level)
+
+        if form.is_valid():
+            result = form.save(commit=False)
+            result.exam_type = exam_type
+            result.class_level = class_level
+            result.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                messages.success(request, 'Result saved successfully!')
+                return redirect('admin_view_student_to_add_result', exam_type_id=exam_type_id, class_level_id=class_level_id)  # Replace with your URL name for the result list view
+            elif action == 'save_and_continue':
+                messages.success(request, 'Result saved! You can add another one.')
+                return redirect('admin_add_result', exam_type_id=exam_type_id, class_level_id=class_level_id)
+
+        context = {'form': form, 'is_edit': pk is not None}
+        return render(request, 'hod_template/add_manage_result.html', context)
+    
+
+class StudentResultCreateUpdateView(CreateView, UpdateView):
+    model = Result
+    form_class = StudentResultForm
+    template_name = 'hod_template/add_student_result.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        student = get_object_or_404(Students, id=self.kwargs['student_id'])
+        exam_type = get_object_or_404(ExamType, id=self.kwargs['exam_type_id'])
+        kwargs.update({
+            'student': student,
+            'exam_type': exam_type
+        })
+        return kwargs
+
+    def form_valid(self, form):
+        # Set the `student`, `exam_type`, and `class_level` fields
+        form.instance.student = get_object_or_404(Students, id=self.kwargs['student_id'])
+        form.instance.exam_type = get_object_or_404(ExamType, id=self.kwargs['exam_type_id'])
+        form.instance.class_level = form.instance.student.class_level  # Set class_level from student
+
+        return super().form_valid(form)
+
+    def get_object(self, queryset=None):
+        # Return the existing Result object if in update mode
+        if self.kwargs.get('pk'):
+            return super().get_object(queryset)
+        return None
+
+    def get_success_url(self):
+        action = self.request.POST.get('action')
+        
+        if action == 'save_and_continue':
+            return reverse('admin_student_result_create_update', kwargs={
+                'student_id': self.kwargs['student_id'],
+                'exam_type_id': self.kwargs['exam_type_id'],
+                'class_level_id': self.kwargs['class_level_id']
+            })
+        
+        elif action == 'save' :
+             return reverse('admin_view_student_to_add_result', kwargs={
+            'exam_type_id': self.kwargs['exam_type_id'],
+            'class_level_id': self.kwargs['class_level_id']
+        })   
+       
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['student'] = get_object_or_404(Students, id=self.kwargs['student_id'])
+        context['exam_type'] = get_object_or_404(ExamType, id=self.kwargs['exam_type_id'])
+        context['is_edit'] = self.object is not None
+        return context
+    
+    
+def get_subject_count_per_class_level(request):
+    data = Subject.objects.values('class_level__class_name').annotate(subject_count=models.Count('id'))
+    return JsonResponse(list(data), safe=False)    
+
+@login_required
+def get_branch_student_counts(request):
+    # Aggregate the number of students by branch
+    branch_counts = Students.objects.values('branch').annotate(total_students=Count('id'))
+
+    # Prepare data for JSON response
+    labels = [item['branch'] for item in branch_counts]
+    data = [item['total_students'] for item in branch_counts]
+    
+    return JsonResponse({
+        'labels': labels,
+        'data': data
+    })
+    
+  
+@login_required
+def get_gender_branch_student_counts(request):
+    # Aggregate the number of male and female students by branch
+    gender_branch_counts = Students.objects.values('branch', 'gender').annotate(total_students=Count('id'))
+
+    # Prepare data for JSON response
+    branches = list(set(item['branch'] for item in gender_branch_counts))
+    genders = list(set(item['gender'] for item in gender_branch_counts))
+    
+    # Initialize the data structure
+    branch_gender_data = {branch: {gender: 0 for gender in genders} for branch in branches}
+
+    # Populate the data structure with counts
+    for item in gender_branch_counts:
+        branch_gender_data[item['branch']][item['gender']] = item['total_students']
+    
+    # Prepare labels and datasets for JSON response
+    labels = branches
+    male_counts = [branch_gender_data[branch].get('Male', 0) for branch in branches]
+    female_counts = [branch_gender_data[branch].get('Female', 0) for branch in branches]
+    
+    return JsonResponse({
+        'labels': labels,
+        'male_data': male_counts,
+        'female_data': female_counts
+    })    
+    
+@login_required
+def get_class_level_branch_counts(request):
+    # Aggregate the number of students by class level and branch
+    class_level_branch_counts = Students.objects.values('class_level__class_name', 'branch').annotate(total_students=Count('id'))
+
+    # Prepare data for JSON response
+    class_levels = list(set(item['class_level__class_name'] for item in class_level_branch_counts))
+    branches = list(set(item['branch'] for item in class_level_branch_counts))
+    
+    # Initialize the data structure
+    branch_class_level_data = {branch: {class_level: 0 for class_level in class_levels} for branch in branches}
+
+    # Populate the data structure with counts
+    for item in class_level_branch_counts:
+        branch_class_level_data[item['branch']][item['class_level__class_name']] = item['total_students']
+    
+    # Prepare labels and datasets for JSON response
+    labels = branches
+    datasets = []
+
+    for class_level in class_levels:
+        dataset = {
+            'label': class_level,
+            'data': [branch_class_level_data[branch].get(class_level, 0) for branch in branches],
+            'backgroundColor': get_color_for_class_level(class_level),  # Function to get color for each class level
+            'borderColor': get_color_for_class_level(class_level),
+            'borderWidth': 1
+        }
+        datasets.append(dataset)
+    
+    return JsonResponse({
+        'labels': labels,
+        'datasets': datasets
+    })
+
+def get_color_for_class_level(class_level):
+    # Function to return a color based on class level
+    color_map = {
+        'Nursery': '#FF9999',     # Light Pink
+        'KG1': '#FFCC99',         # Light Orange
+        'KG2': '#FFCCFF',         # Light Purple
+        'Standard One': '#FF6384',    # Red
+        'Standard Two': '#36A2EB',    # Blue
+        'Standard Three': '#FFCE56',  # Yellow
+        'Standard Four': '#4BC0C0',   # Teal
+        'Standard Five': '#9966FF',   # Purple
+        'Standard Six': '#FF9F40',    # Orange
+        'Standard Seven': '#66FF66',  # Light Green
+        'Form One': '#FFB6C1',    # Light Pink
+        'Form Two': '#87CEEB',    # Sky Blue
+        'Form Three': '#98FB98',  # Pale Green
+        'Form Four': '#FFA07A',   # Light Salmon
+      
+       
+    }
+    return color_map.get(class_level, '#DDDDDD')  # Default color if class level is not found  

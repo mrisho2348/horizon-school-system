@@ -47,7 +47,7 @@ List of Students
                                        {% endif %}
                                 </td>
                                     <td>{{ student.full_name }}</td>
-                                    <td>{{ student.current_class }}</td>
+                                    <td>{{ student.class_level }}</td>
                                     <td>      <script>
                                         var dob = new Date("{{ student.date_of_birth|date:'Y-m-d' }}");
                                         var now = new Date();
@@ -58,7 +58,7 @@ List of Students
                                     </script>
                                 </td>
                                     <td>{{ student.gender }}</td>
-                                    <td>{{ student.phone_number }}</td>
+                                    <td>{{ student.first_phone_number }}</td>
                                     <td>{{ student.fee_payer_number }}</td>
                                     <td>{{ student.address }}</td>
                                     <td>

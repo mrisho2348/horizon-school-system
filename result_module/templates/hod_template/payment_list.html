@@ -36,7 +36,7 @@ School Fees Payments
                                 {% for payment in payments %}
                                 <tr>                             
                                     <td>{{ payment.student.full_name }}</td>
-                                    <td>{{ payment.student.current_class }}</td>
+                                    <td>{{ payment.student.class_level }}</td>
                                     <td>{{ payment.installment.installment_name }}</td>
                                     <td>{{ payment.installment.amount_required }}</td>
                                     <td>{{ payment.amount_paid }}</td>

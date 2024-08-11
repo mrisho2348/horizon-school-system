@@ -4,9 +4,9 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <link rel="icon" type="image/png" href="{% static 'img/zamzamLogo.jpg' %}">
+  <link rel="icon" type="image/png" href="{% static 'img/HORIZONLogo.jpg' %}">
   <title>{% block title %}
-    zamzam | Dashboard
+    HORIZON | Dashboard
     {% endblock title %}</title>
   <!-- Tell the browser to be responsive to screen width -->
 
@@ -89,7 +89,7 @@
         <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
-        <h3>ZAMZAM SCHOOL</h3>
+        <h3>HORIZON SCHOOL</h3>
       </li>
     
     </ul>
@@ -108,13 +108,13 @@
     </ul>
 
     <!-- Right navbar links -->
-      {% comment %} {% include "hod_template/notification.html" %} {% endcomment %}
+      {% comment %} {% include "headmaster_template/notification.html" %} {% endcomment %}
   </nav>
   <!-- /.navbar -->
 
   <!-- Main Sidebar Container -->
 
-{% include "hod_template/sidebar_template.html" %}
+{% include "headmaster_template/sidebar_template.html" %}
   <!-- Content Wrapper. Contains page content -->
    <!-- Content Wrapper. Contains page content -->
  <div class="content-wrapper">
@@ -142,7 +142,7 @@
     </div><!-- /.container-fluid -->
   </div>
   <!-- /.content-header -->
- {% comment %} {% include "hod_template/content_header.html" %} {% endcomment %}
+ {% comment %} {% include "headmaster_template/content_header.html" %} {% endcomment %}
     <!-- /.content-header -->
   {% block main_content %}
 
@@ -152,7 +152,7 @@
     <!-- /.content -->
   </div>
   <!-- /.content-wrapper -->
-{% include "hod_template/footer.html" %}
+{% include "headmaster_template/footer.html" %}
 
 
 </div>

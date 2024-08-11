@@ -1,11 +1,11 @@
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 
 {% block title %}
 Total Fees Collected
 {% endblock title %}
 
 {% block breadcrumb %}
-{% include "hod_template/modal_form.html" %}
+{% include "headmaster_template/modal_form.html" %}
 {% endblock breadcrumb %}
 
 {% load static %}
@@ -33,7 +33,7 @@ Total Fees Collected
                                 {% for payment in installments %}
                                 <tr>
                                     <td>{{ payment.student.full_name }}</td>
-                                    <td>{{ payment.student.current_class }}</td>
+                                    <td>{{ payment.student.class_level }}</td>
                                     <td>{{ payment.installment.installment_name }}</td>
                                     <td>{{ payment.amount_paid }}</td>                                    
                                     <td>{{ payment.date_paid }}</td>                                   
@@ -48,5 +48,5 @@ Total Fees Collected
     </div>
 </div>
 
-{% include 'hod_template/datatable.html' %}
+{% include 'headmaster_template/datatable.html' %}
 {% endblock main_content %}

@@ -101,13 +101,12 @@ School Fees Installments
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label for="school_class">Class</label>
-                            <select class="form-control select2bs4" style="width: 100%;" id="school_class" name="school_class" required>
-                                <option value="Form One">Form One</option>
-                                <option value="Form Two">Form Two</option>
-                                <option value="Form Three">Form Three</option>
-                                <option value="Form Four">Form Four</option>
-                              </select>
+                            <label for="class_level">Class</label>
+                            <select class="form-control select2bs4" style="width: 100%;" id="class_level" name="class_level" required>
+                                {% for class_level in class_levels %}
+                                    <option value="{{ class_level.class_name }}">{{ class_level.class_name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
                     <div class="row">
@@ -210,12 +209,13 @@ School Fees Installments
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label for="school_class{{ installment.id }}">Class</label>
-                            <select class="form-control select2bs4" style="width: 100%;" id="school_class{{ installment.id }}" name="school_class" required>
-                                <option value="Form One" {% if installment.school_class == 'Form One' %} selected {% endif %}>Form One</option>
-                                <option value="Form Two" {% if installment.school_class == 'Form Two' %} selected {% endif %}>Form Two</option>
-                                <option value="Form Three" {% if installment.school_class == 'Form Three' %} selected {% endif %}>Form Three</option>
-                                <option value="Form Four" {% if installment.school_class == 'Form Four' %} selected {% endif %}>Form Four</option>
+                            <label for="class_level{{ installment.id }}">Class</label>
+                            <select class="form-control select2bs4" style="width: 100%;" id="class_level{{ installment.id }}" name="class_level" required>
+                                {% for class_level in class_levels %}
+                                    <option value="{{ class_level.id }}" {% if installment.class_level.id == class_level.id %} selected {% endif %}>
+                                        {{ class_level.class_name }}
+                                    </option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>

@@ -39,7 +39,7 @@
                                     <th>Commerce </th>
                                     <th>Book Keeping </th>
                                     <th>Date of Exam</th>
-                                    <th>Action</th>
+                            
                                 </tr>
                             </thead>
                             <tbody>
@@ -63,11 +63,7 @@
                                     <td>{{ result.commerce_score }}</td>
                                     <td>{{ result.book_keeping_score }}</td>
                                     <td>{{ result.date_of_exam }}</td>
-                                    <td>   
-                                    <button  class="btn btn-info btn-sm" data-toggle="modal" data-target="#addResultModal{{ result.student.id }}"  data-toggle="tooltip" title="Create student result">
-                                        <i class="fa fa-eye text-dark"></i>
-                                    </button> 
-                                </td>
+                                   
                                 </tr>
                                 {% endfor %}
                             </tbody>

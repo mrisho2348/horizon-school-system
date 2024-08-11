@@ -1,4 +1,4 @@
-{% extends 'staff_template/base_template.html' %}
+{% extends 'academic_template/base_template.html' %}
 
 {% block title %}
 Result 
@@ -9,7 +9,7 @@ Result
 {% endblock page_title %}
 
 {% block breadcrumb %}
-{% include "staff_template/modal_form.html" %}
+{% include "academic_template/modal_form.html" %}
 <a class="btn btn-primary float-right" type="button" data-toggle="modal" data-target="#addResultModal">
     <i class="fas fa-plus"></i> New Result 
 </a>
@@ -222,5 +222,5 @@ Result
     }
 </script>
 
-{% include 'staff_template/datatable.html' %}
+{% include 'academic_template/datatable.html' %}
 {% endblock main_content %}

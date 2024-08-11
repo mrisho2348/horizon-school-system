@@ -18,18 +18,17 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Select Class</label>
-                                        <select class="form-control select2bs4" style="width: 100%;" id="current_class" name="current_class">
-                                            <option value="Form One">Form One</option>
-                                            <option value="Form Two">Form Two</option>
-                                            <option value="Form Three">Form Three</option>
-                                            <option value="Form Four">Form Four</option>
+                                        <select class="form-control select2bs4" style="width: 100%;" id="class_level" name="class_level" required>
+                                            {% for class_level in class_levels %}
+                                                <option value="{{ class_level.id }}">{{ class_level.class_name }}</option>
+                                            {% endfor %}
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="date">Date</label>
-                                        <select class="form-control" id="date" name="date">
+                                        <select class="form-control select2bs4" style="width: 100%;" id="date" name="date">
                                             {% for attendance in attendances %}
                                                 <option value="{{ attendance.id }}">{{ attendance.attendance_date }}</option>
                                             {% endfor %}
@@ -56,14 +55,14 @@
     $(document).ready(function(){      
         $("#fetch_attendance").click(function() {
             var date = $("#date").val();
-            var current_class = $("#current_class").val();
+            var class_level = $("#class_level").val();
 
             $.ajax({
                 url: '{% url 'admin_get_class_student_attendance_data' %}',
                 type: 'POST',
                 data: {
                     date: date,
-                    current_class: current_class
+                    class_level: class_level
                 },
             })
             .done(function(response) {
@@ -71,7 +70,7 @@
                 console.log(json_data);
             
                 // Get the class and subject names based on the selected values
-                var selectedClass = $("#current_class option:selected").text();
+                var selectedClass = $("#class_level option:selected").text();
                 var selectedDate = $("#date option:selected").text();
                 
                 // Update the title dynamically

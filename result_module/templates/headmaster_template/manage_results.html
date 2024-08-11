@@ -1,4 +1,4 @@
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 
 {% block title %}
 Result 
@@ -6,7 +6,7 @@ Result
 
 
 {% block breadcrumb %}
-{% include "hod_template/modal_form.html" %}
+{% include "headmaster_template/modal_form.html" %}
 <a class="btn btn-primary float-right" type="button" data-toggle="modal" data-target="#addResultModal">
     <i class="fas fa-plus"></i> New Result 
 </a>
@@ -192,7 +192,7 @@ Result
     function addResult() {
         $.ajax({
             type: 'POST',
-            url: '{% url "admin_add_results" %}',  // Replace with your URL
+            url: '{% url "headmaster_add_results" %}',  // Replace with your URL
             data: $('#addResultForm').serialize(),
             success: function (data) {
                 if (data.status === 'success') {
@@ -218,5 +218,5 @@ Result
     }
 </script>
 
-{% include 'hod_template/datatable.html' %}
+{% include 'headmaster_template/datatable.html' %}
 {% endblock main_content %}

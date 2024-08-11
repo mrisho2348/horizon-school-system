@@ -20,3 +20,6 @@ def filename(value):
     return os.path.basename(value.name)
 
 
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key, "")

@@ -9,7 +9,7 @@ def download_students_excel_template(request):
     sheet.title = "Students Template"
 
     # Define column headers from model fields
-    excluded_fields = ['id', 'created_at', 'updated_at']
+    excluded_fields = ['id', 'created_at', 'updated_at','registration_number','examination_number','previously_examination_number','profile_pic','is_active']
     model_fields = [field.name for field in Students._meta.get_fields() 
                     if not field.auto_created and not field.is_relation and field.name not in excluded_fields]
 

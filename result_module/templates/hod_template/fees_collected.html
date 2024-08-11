@@ -33,7 +33,7 @@ Total Fees Collected
                                 {% for payment in installments %}
                                 <tr>
                                     <td>{{ payment.student.full_name }}</td>
-                                    <td>{{ payment.student.current_class }}</td>
+                                    <td>{{ payment.student.class_level }}</td>
                                     <td>{{ payment.installment.installment_name }}</td>
                                     <td>{{ payment.amount_paid }}</td>                                    
                                     <td>{{ payment.date_paid }}</td>                                   

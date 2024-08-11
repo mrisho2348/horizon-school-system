@@ -1,0 +1,91 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block title %}
+List of Fee Payments
+{% endblock title %}
+
+{% block breadcrumb %}
+{% include "hod_template/modal_form.html" %}
+<a class="btn btn-primary float-right mr-2" type="button" href="{% url "admin_fee_payment_create" %}">
+    <i class="fas fa-plus"></i>  Add Fee Payments
+</a>
+{% endblock breadcrumb %}
+
+{% load static %}
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="header-title text-center mt-0 mb-1 text-uppercase">List of Fee Payments</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm display" id="example" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Student</th>
+                                    <th>Class Fee</th>
+                                    <th>Amount Paid</th>
+                                    <th>Amount Remaining</th>
+                                    <th>Payment Status</th>
+                                    <th>Payment Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in fee_payments %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ payment.student.full_name }}</td>
+                                    <td>{{ payment.class_fee }}</td>
+                                    <td>{{ payment.amount_paid }}</td>
+                                    <td>{{ payment.amount_remaining }}</td>
+                                    <td>{{ payment.payment_status }}</td>
+                                    <td>{{ payment.payment_date|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'admin_fee_payment_edit' payment.pk %}" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal{{ payment.pk }}">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Bootstrap Modal for Deleting Payment Structure -->
+                                <div class="modal fade" id="deleteModal{{ payment.pk }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ payment.pk }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel{{ payment.pk }}">Delete fee Payments</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to delete the fee Payments for <strong>{{ payment.student.full_name }}</strong> with amount <strong>{{ payment.amount }}</strong>?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                <form method="post" action="{% url 'admin_fee_payment_delete' payment.pk %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'hod_template/datatable.html' %}
+{% endblock main_content %}

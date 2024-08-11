@@ -1,4 +1,4 @@
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 
 {% block title %}
     {% if student.pk %} Edit Student {% else %} Add Student {% endif %}
@@ -21,22 +21,45 @@
                     <div class="container-fluid">
                         <form method="post" enctype="multipart/form-data">
                             {% csrf_token %}
+                            <!-- Student Name Section -->
                             <div class="row">
                                 <div class="col-md-4 mb-3">
-                                    <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
-                                    {{ form.full_name }}
-                                    {% if form.full_name.errors %}
+                                    <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
                                         <div class="invalid-feedback d-block">
-                                            {{ form.full_name.errors }}
+                                            {{ form.first_name.errors }}
                                         </div>
                                     {% endif %}
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <label for="{{ form.current_class.id_for_label }}">{{ form.current_class.label }}</label>
-                                    {{ form.current_class }}
-                                    {% if form.current_class.errors %}
+                                    <label for="{{ form.middle_name.id_for_label }}">{{ form.middle_name.label }}</label>
+                                    {{ form.middle_name }}
+                                    {% if form.middle_name.errors %}
                                         <div class="invalid-feedback d-block">
-                                            {{ form.current_class.errors }}
+                                            {{ form.middle_name.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.last_name.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Additional Information Section -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.class_level.id_for_label }}">{{ form.class_level.label }}</label>
+                                    {{ form.class_level }}
+                                    {% if form.class_level.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.class_level.errors }}
                                         </div>
                                     {% endif %}
                                 </div>
@@ -49,8 +72,6 @@
                                         </div>
                                     {% endif %}
                                 </div>
-                            </div>
-                            <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label for="{{ form.gender.id_for_label }}">{{ form.gender.label }}</label>
                                     {{ form.gender }}
@@ -60,12 +81,25 @@
                                         </div>
                                     {% endif %}
                                 </div>
+                            </div>
+
+                            <!-- Contact Information Section -->
+                            <div class="row">
                                 <div class="col-md-4 mb-3">
-                                    <label for="{{ form.phone_number.id_for_label }}">{{ form.phone_number.label }}</label>
-                                    {{ form.phone_number }}
-                                    {% if form.phone_number.errors %}
+                                    <label for="{{ form.first_phone_number.id_for_label }}">{{ form.first_phone_number.label }}</label>
+                                    {{ form.first_phone_number }}
+                                    {% if form.first_phone_number.errors %}
                                         <div class="invalid-feedback d-block">
-                                            {{ form.phone_number.errors }}
+                                            {{ form.first_phone_number.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.second_phone_number.id_for_label }}">{{ form.second_phone_number.label }}</label>
+                                    {{ form.second_phone_number }}
+                                    {% if form.second_phone_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.second_phone_number.errors }}
                                         </div>
                                     {% endif %}
                                 </div>
@@ -79,6 +113,8 @@
                                     {% endif %}
                                 </div>
                             </div>
+
+                            <!-- Address and Branch Section -->
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
@@ -89,6 +125,28 @@
                                         </div>
                                     {% endif %}
                                 </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.branch.id_for_label }}">{{ form.branch.label }}</label>
+                                    {{ form.branch }}
+                                    {% if form.branch.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.branch.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.services.id_for_label }}">{{ form.services.label }}</label>
+                                    {{ form.services }}
+                                    {% if form.services.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.services.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Profile Picture and Examination Numbers Section -->
+                            <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label for="{{ form.profile_pic.id_for_label }}">{{ form.profile_pic.label }}</label>
                                     {{ form.profile_pic }}
@@ -107,7 +165,18 @@
                                         </div>
                                     {% endif %}
                                 </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.previously_examination_number.id_for_label }}">{{ form.previously_examination_number.label }}</label>
+                                    {{ form.previously_examination_number }}
+                                    {% if form.previously_examination_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.previously_examination_number.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
+
+                            <!-- Form Submission Section -->
                             <div class="card-footer">
                                 <div class="row">
                                     <div class="col-md-6">
@@ -118,6 +187,8 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Message Display Section -->
                             <div class="form-group mt-3">
                                 {% if messages %}
                                     <div class="col-12">
@@ -130,7 +201,7 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                            </div>                         
+                            </div>
                         </form>
                     </div>
                 </div>

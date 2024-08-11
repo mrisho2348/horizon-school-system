@@ -1,0 +1,86 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block title %}
+Fee Structure List
+{% endblock title %}
+
+{% block breadcrumb %}
+{% include "hod_template/modal_form.html" %}
+<a class="btn btn-primary float-right mr-2" href="{% url 'admin_fee_structure_create' %}">
+    <i class="fas fa-plus"></i> New Fee Structure
+</a>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="header-title text-center mt-0 mb-1 text-uppercase">Fee Structure List</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm" id="example">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Class Level</th>
+                                    <th>School Fee Amount</th>
+                                    <th>Created At</th>
+                                    <th>Updated At</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fee_structure in fee_structures %}
+                                <tr>
+                                    <td>{{ fee_structure.id }}</td>
+                                    <td>{{ fee_structure.class_level.class_name }}</td>
+                                    <td>{{ fee_structure.school_fee_amount }}</td>
+                                    <td>{{ fee_structure.created_at }}</td>
+                                    <td>{{ fee_structure.updated_at }}</td>
+                                    <td>
+                                        <a href="{% url 'admin_fee_structure_edit' fee_structure.pk %}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal{{ fee_structure.pk }}">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Bootstrap Modal for Deleting Fee Structure -->
+                                <div class="modal fade" id="deleteModal{{ fee_structure.pk }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ fee_structure.pk }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel{{ fee_structure.pk }}">Delete Fee Structure</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to delete the Fee Structure for <strong>{{ fee_structure.class_level.class_name }}</strong> with amount <strong>{{ fee_structure.school_fee_amount }}</strong>?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                <form method="post" action="{% url 'admin_fee_structure_delete' fee_structure.pk %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'hod_template/datatable.html' %}
+{% endblock main_content %}

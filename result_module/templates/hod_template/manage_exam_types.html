@@ -65,28 +65,30 @@ Exam Types Information
                                     </div>
                         
                                     <script>
-                                        function deleteExam_type(exam_typeId) {
-                                            $.ajax({
-                                                type: 'POST',
-                                                url: '/delete_exam_type/' + exam_typeId + '/',  // Replace with your URL
-                                                data: {},
-                                                success: function (data) {
-                                                    if (data.status === 'success') {
-                                                        $('#deleteExam_typeModal' + exam_typeId).modal('hide');
-                                                        location.reload(true);
-                                                        // Refresh the category list or perform any other actions
-                                                    } else {
-                                                        // Handle other status cases if needed
-                                                        alert(data.message);
-                                                    }
-                                                },
-                                                error: function (error) {
-                                                    alert(error);
-                                                    // Handle errors if necessary
-                                                }
-                                            });
-                                        }
-                                    </script>
+                                      function deleteExam_type(exam_typeId) {
+                                          $.ajax({
+                                              type: 'POST',
+                                              url: '{% url "admin_delete_exam_type" %}',  // Your URL without exam_typeId in the path
+                                              data: {
+                                                  exam_type_id: exam_typeId  // Pass the exam_typeId as part of the POST data
+                                              },
+                                              success: function (data) {
+                                                  if (data.status === 'success') {
+                                                      $('#deleteExam_typeModal' + exam_typeId).modal('hide');
+                                                      location.reload(true);
+                                                      // Refresh the category list or perform any other actions
+                                                  } else {
+                                                      // Handle other status cases if needed
+                                                      alert(data.message);
+                                                  }
+                                              },
+                                              error: function (error) {
+                                                  alert(error);
+                                                  // Handle errors if necessary
+                                              }
+                                          });
+                                      }
+                                  </script>
                                 </div>
                             </div>
                             

@@ -4,7 +4,7 @@
     <a href="#" class="brand-link">
       <img src="{% static 'img/zamzamLogo.jpg' %}" alt="Tabora Logo" class="brand-image img-circle elevation-3"
            style="opacity: .8">
-      <span class="brand-text font-weight-light">Zam Zam </span>
+      <span class="brand-text font-weight-light">HORIZON ACADEMY</span>
     </a>
 
     <!-- Sidebar -->
@@ -12,7 +12,7 @@
       <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="image">
-          <a href="{% url 'staff_update_profile_picture' %}">
+          <a href="{% url 'academic_update_profile_picture' %}">
             {% if request.user.staffs.profile_pic %}
                 <img src="{{ request.user.staffs.profile_pic.url }}" class="img-circle elevation-2" alt="User Image">
             {% else %}
@@ -31,8 +31,8 @@
            with font-awesome or any other icon font library -->
 
       <li class="nav-item">
-        {% url 'staff_home' as staff_home %}
-        <a href="{% url 'staff_home' %}" class="nav-link {% if request.path == staff_home %} active {% endif %}">
+        {% url 'academic_home' as academic_home %}
+        <a href="{% url 'academic_home' %}" class="nav-link {% if request.path == academic_home %} active {% endif %}">
 
           <i class="nav-icon fa fa-home"></i>
           <p>
@@ -50,71 +50,36 @@
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <li class="nav-item">
-            {% url 'staff_manage_student' as manage_student_url %}
+            {% url 'academic_manage_student' as manage_student_url %}
               <a href="{{ manage_student_url }}" class="nav-link {% if request.path == manage_student_url %} active {% endif %}">
                 <i class="nav-icon fas fa-user-graduate"></i>
                   <p>Student List</p>
               </a>
-          </li>
+          </li>                
           <li class="nav-item">
-            {% url 'staff_take_attendance' as take_attendance_url %}
-              <a href="{{ take_attendance_url }}" class="nav-link {% if request.path == take_attendance_url %} active {% endif %}">
-                  <i class="nav-icon fas fa-clipboard-check"></i>
-                  <p>Take subject Attendance</p>
-              </a>
-          </li>
-          <li class="nav-item">
-            {% url 'staff_view_subject_attendance' as view_subject_attendance_url %}
-              <a href="{{ view_subject_attendance_url }}" class="nav-link {% if request.path == view_subject_attendance_url %} active {% endif %}">
-                  <i class="nav-icon fas fa-clipboard-check"></i>
-                  <p>view subject Attendance</p>
-              </a>
-          </li>
-          <li class="nav-item">
-            {% url 'staff_take_class_attendance' as take_class_attendance_url %}
+            {% url 'academic_take_class_attendance' as take_class_attendance_url %}
               <a href="{{ take_class_attendance_url }}" class="nav-link {% if request.path == take_class_attendance_url %} active {% endif %}">
                   <i class="nav-icon fas fa-calendar-check"></i>
                   <p>Take Class Attendance</p>
               </a>
           </li>
           <li class="nav-item">
-            {% url 'staff_update_class_attendance' as update_class_attendance_url %}
+            {% url 'academic_update_class_attendance' as update_class_attendance_url %}
             <a href="{{ update_class_attendance_url }}" class="nav-link {% if request.path == update_class_attendance_url %} active {% endif %}">
                 <i class="nav-icon fas fa-clipboard-check"></i>
                 <p>Update Class Attendance</p>
             </a>
         </li>        
           <li class="nav-item">
-            {% url 'staff_view_class_attendance' as view_class_attendance_url %}
+            {% url 'academic_view_class_attendance' as view_class_attendance_url %}
             <a href="{{ view_class_attendance_url }}" class="nav-link {% if request.path == view_class_attendance_url %} active {% endif %}">
                 <i class="nav-icon fas fa-clipboard-check"></i>
                 <p>view Class Attendance</p>
             </a>
         </li>        
           <li class="nav-item">
-            {% url 'staff_update_attendance' as update_attendance_url %}
-              <a href="{{ update_attendance_url }}" class="nav-link {% if request.path == update_attendance_url %} active {% endif %}">
-                  <i class="nav-icon fas fa-calendar-alt"></i>
-                  <p>Update subject Attendance</p>
-              </a>
-          </li>
-          <li class="nav-item">
-            {% url 'staff_sendfeedback' as sendfeedback_url %}
-              <a href="{{ sendfeedback_url }}" class="nav-link {% if request.path == sendfeedback_url %} active {% endif %}">
-                  <i class="nav-icon fas fa-comments"></i>
-                  <p>Send Feedback</p>
-              </a>
-          </li>
-          <li class="nav-item">
-            {% url 'staff_apply_leave' as apply_leave_url %}
-              <a href="{{ apply_leave_url }}" class="nav-link {% if request.path == apply_leave_url %} active {% endif %}">
-                  <i class="nav-icon fas fa-calendar-times"></i>
-                  <p>Apply for Leave</p>
-              </a>
-          </li>
-          <li class="nav-item">
-            {% url 'staff_detail' as staff_detail_url %}
-              <a href="{{ staff_detail_url }}" class="nav-link {% if request.path == staff_detail_url %} active {% endif %}">
+            {% url 'academic_detail' as academic_detail_url %}
+              <a href="{{ academic_detail_url }}" class="nav-link {% if request.path == academic_detail_url %} active {% endif %}">
                   <i class="nav-icon fas fa-user"></i>
                   <p>My Details</p>
               </a>
@@ -126,14 +91,14 @@
               </a>
               <ul class="nav nav-treeview">
                   <li class="nav-item">
-                    {% url 'staff_exam_type_list' as exam_type_list_url %}
+                    {% url 'academic_exam_type_list' as exam_type_list_url %}
                       <a href="{{ exam_type_list_url }}" class="nav-link {% if request.path == exam_type_list_url %} active {% endif %}">
                           <i class="nav-icon fas fa-plus"></i>
                           <p>Add Result</p>
                       </a>
                   </li>
                   <li class="nav-item">
-                      <a href="{% url 'staff_students_wise_result_page' %}" class="nav-link {% if request.path == students_wise_result_page %} active {% endif %}">
+                      <a href="{% url 'academic_students_wise_result_page' %}" class="nav-link {% if request.path == students_wise_result_page %} active {% endif %}">
                           <i class="nav-icon fas fa-chart-bar"></i>
                           <p>Result Management</p>
                       </a>

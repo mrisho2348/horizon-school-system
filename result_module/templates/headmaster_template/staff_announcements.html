@@ -1,10 +1,10 @@
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 {% load custom_filters %}
 {% block title %}
 Staff Announcements
 {% endblock %}
 {% block breadcrumb %}
-{% include "hod_template/modal_form.html" %}
+{% include "headmaster_template/modal_form.html" %}
   <!-- Button to trigger modal -->
   <a class="btn btn-success float-right" type="button" data-toggle="modal" data-target="#addAnnouncementModal">
     <i class="fas fa-plus"></i>  Create Announcement
@@ -99,7 +99,7 @@ Staff Announcements
  <script>
     function deleteAnnouncement(announcementId) {
         $.ajax({
-            url: "{% url 'admin_delete_announcement' %}",
+            url: "{% url 'headmaster_delete_announcement' %}",
             type: "POST",
             data: {
                 announcement_id: announcementId,
@@ -192,7 +192,7 @@ Staff Announcements
 
             // Send AJAX request to edit announcement
             $.ajax({
-                url: "{% url 'admin_edit_announcement' %}",
+                url: "{% url 'headmaster_edit_announcement' %}",
                 type: "POST",
                 data: formData,
                 processData: false, // Important! Prevents jQuery from automatically transforming the data into a query string
@@ -257,7 +257,7 @@ Staff Announcements
         // Function to fetch students for announcement and populate modal
         function fetchStudentsForAnnouncement(announcementId) {
             $.ajax({
-                url: '{% url "admin_fetch_students_for_announcement" %}',
+                url: '{% url "headmaster_fetch_students_for_announcement" %}',
                 type: 'GET',
                 data: { announcement_id: announcementId },
                 success: function(data) {
@@ -299,7 +299,7 @@ Staff Announcements
     function updateReadCount(announcementId) {
         // Send AJAX request to fetch the updated count
         $.ajax({
-            url: '{% url "admin_fetch_read_count" %}',
+            url: '{% url "headmaster_fetch_read_count" %}',
             type: 'GET',
             data: {announcement_id: announcementId},
             success: function(data) {
@@ -411,5 +411,5 @@ Staff Announcements
     });
 </script>
 
-{% include 'hod_template/datatable.html' %}  
+{% include 'headmaster_template/datatable.html' %}  
 {% endblock main_content %}

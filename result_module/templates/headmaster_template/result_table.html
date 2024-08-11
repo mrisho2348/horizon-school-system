@@ -1,4 +1,4 @@
-{% include "hod_template/modal_form.html" %}
+{% include "headmaster_template/modal_form.html" %}
 <div class="row">
     <div class="col-md-12">
         <div class="container-fluid mt-5">
@@ -95,7 +95,7 @@
                     function saveMarks(resultId) {
                         var marks = $('#marks' + resultId).val();
                         $.ajax({
-                            url: '{% url "admin_save_marks_endpoint" %}',
+                            url: '{% url "headmaster_save_marks_endpoint" %}',
                             type: 'POST',
                             data: {
                                 resultId: resultId,
@@ -118,7 +118,7 @@
                     // Function to delete the result
                     function deleteResult(resultId) {
                         $.ajax({
-                            url: '{% url "admin_delete_result_endpoint" %}',
+                            url: '{% url "headmaster_delete_result_endpoint" %}',
                             type: 'POST',
                             data: {
                                 resultId: resultId
@@ -162,7 +162,7 @@
                   <p>No <span style="color:brown">{{ exam_type.name }}</span> subject-wise results assigned yet for this student.</p>
                 {% endif %}
               </div>
-              <a href="{% url 'admin_download_student_results_excel' student.id exam_type.id year %}" class="btn btn-primary">Download Results as Excel</a>
+              <a href="{% url 'headmaster_download_student_results_excel' student.id exam_type.id year %}" class="btn btn-primary">Download Results as Excel</a>
             </div>
             </div>
           </div>
@@ -171,4 +171,4 @@
 </div>
 
 
-{% include 'hod_template/datatable.html' %}
+{% include 'headmaster_template/datatable.html' %}

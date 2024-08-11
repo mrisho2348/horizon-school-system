@@ -1,4 +1,4 @@
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 <title>
     {% block title %}
     All Payments for {{student.full_name }}
@@ -41,5 +41,5 @@
         </div>
     </div>
 </div>
-{% include 'hod_template/datatable.html' %}
+{% include 'headmaster_template/datatable.html' %}
 {% endblock main_content %}

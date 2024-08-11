@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card text-white bg-danger mb-3">
+                    <div class="card-header">
+                        <h4 class="card-title">An Error Occurred</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ error_message }}</p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{% url 'accountant_home' %}" class="btn btn-light">Back to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

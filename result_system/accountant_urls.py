@@ -32,9 +32,60 @@ urlpatterns = [
     path('get_school_fees_monthly_data/', AccountantViews.get_school_fees_monthly_data, name='accountant_get_school_fees_monthly_data'),
     path('get_expenditure_monthly_data/', AccountantViews.get_expenditure_monthly_data, name='accountant_get_expenditure_monthly_data'),
     path('get_classwise_fee_payment_data/', AccountantViews.get_classwise_fee_payment_data, name='accountant_get_classwise_fee_payment_data'),
-    path('add_expenditure_view/', AccountantViews.add_expenditure_view, name='accountant_add_expenditure_view'),
+   
     path('delete_expenditure/', AccountantViews.delete_expenditure, name='accountant_delete_expenditure'),
     path('update_profile_picture/', AccountantViews.update_profile_picture, name='accountant_update_profile_picture'),
+    
+    path('fee-structure/add/', AccountantViews.FeeStructureCreateView.as_view(), name='accountant_fee_structure_create'),
+    path('fee-structure/edit/<int:pk>/', AccountantViews.FeeStructureCreateView.as_view(), name='accountant_fee_structure_edit'),
+    path('fee-structure/list/', AccountantViews.FeeStructureListView.as_view(), name='accountant_fee_structure_list'),
+    path('fee-structure/delete/<int:pk>/', AccountantViews.FeeStructureDeleteView.as_view(), name='accountant_fee_structure_delete'),
+    
+    
+    path('expenditures/', AccountantViews.ExpenditureListView.as_view(), name='accountant_expenditure_list'),
+    path('expenditure/add/', AccountantViews.ExpenditureCreateView.as_view(), name='accountant_add_expenditure'),
+    path('expenditure/<int:pk>/edit/', AccountantViews.ExpenditureCreateView.as_view(), name='accountant_edit_expenditure'),
+    path('expenditure/<int:pk>/delete/', AccountantViews.ExpenditureDeleteView.as_view(), name='accountant_delete_expenditure'),
+    
+    path('class_fees/', AccountantViews.ClassFeeListView.as_view(), name='accountant_class_fee_list'),
+    path('class_fee/add/', AccountantViews.ClassFeeCreateView.as_view(), name='accountant_add_class_fee'),
+    path('class_fee/<int:pk>/edit/', AccountantViews.ClassFeeCreateView.as_view(), name='accountant_edit_class_fee'),
+    path('class_fee/<int:pk>/delete/', AccountantViews.ClassFeeDeleteView.as_view(), name='accountant_delete_class_fee'),
+    
+    path('madrasatul-fee/add/', AccountantViews.MadrasatulFeeCreateView.as_view(), name='accountant_madrasatul_fee_create'),     
+    path('madrasatul-fee/edit/<int:pk>/', AccountantViews.MadrasatulFeeCreateView.as_view(), name='accountant_madrasatul_fee_edit'),       
+    path('madrasatul-fee/list/', AccountantViews.MadrasatulFeeListView.as_view(), name='accountant_madrasatul_fee_list'),
+    path('madrasatul-fee/delete/<int:pk>/', AccountantViews.MadrasatulFeeDeleteView.as_view(), name='accountant_madrasatul_fee_delete'),
+        
+
+    path('transport-fee/add/', AccountantViews.TransportFeeCreateUpdateView.as_view(), name='accountant_transport_fee_create'),
+    path('transport-fee/edit/<int:pk>/', AccountantViews.TransportFeeCreateUpdateView.as_view(), name='accountant_transport_fee_edit'),
+    path('transport-fee/', AccountantViews.TransportFeeListView.as_view(), name='accountant_transport_fee_list'),
+    path('transport-fee/delete/<int:pk>/', AccountantViews.TransportFeeDeleteView.as_view(), name='accountant_transport_fee_delete'), 
+    
+
+    path('fee-payment/add/', AccountantViews.FeePaymentCreateUpdateView.as_view(), name='accountant_fee_payment_create'),
+    path('fee-payment/edit/<int:pk>/', AccountantViews.FeePaymentCreateUpdateView.as_view(), name='accountant_fee_payment_edit'),
+    path('fee-payment/', AccountantViews.FeePaymentListView.as_view(), name='accountant_fee_payment_list'),
+    path('fee-payment/delete/<int:pk>/', AccountantViews.FeePaymentDeleteView.as_view(), name='accountant_fee_payment_delete'),
+    
+    path('madrasatul-fee-payments/add/', AccountantViews.MadrasatulFeePaymentCreateUpdateView.as_view(), name='accountant_madrasatul_fee_payment_create'),
+    path('madrasatul-fee-payments/edit/<int:pk>/', AccountantViews.MadrasatulFeePaymentCreateUpdateView.as_view(), name='accountant_madrasatul_fee_payment_edit'),
+    path('madrasatul-fee-payments/', AccountantViews.MadrasatulFeePaymentListView.as_view(), name='accountant_madrasatul_fee_payment_list'),
+    path('madrasatul-fee-payments/delete/<int:pk>/', AccountantViews.MadrasatulFeePaymentDeleteView.as_view(), name='accountant_madrasatul_fee_payment_delete'),
+    
+    path('transport-fee-payments/', AccountantViews.TransportFeePaymentListView.as_view(), name='accountant_transport_fee_payment_list'),
+    path('transport-fee-payments/add/', AccountantViews.TransportFeePaymentCreateUpdateView.as_view(), name='accountant_transport_fee_payment_create'),
+    path('transport-fee-payments/edit/<int:pk>/', AccountantViews.TransportFeePaymentCreateUpdateView.as_view(), name='accountant_transport_fee_payment_edit'),
+    path('transport-fee-payments/delete/<int:pk>/', AccountantViews.TransportFeePaymentDeleteView.as_view(), name='accountant_transport_fee_payment_delete'),
+    
+    path('fetch-payments/', AccountantViews.student_payment_fetch, name='accountant_student_payment_fetch'),
+    path('fetch-payment/', AccountantViews.payment_fetch, name='accountant_payment_fetch'),
+    path('fetch-students-per-class/', AccountantViews.fetch_students_per_class, name='accountant_fetch_students_per_class'),
+    path('admin/fee-payment-monthly-data/', AccountantViews.get_fee_payment_monthly_data, name='accountant_get_fee_payment_monthly_data'),
+    path('admin/madrasatul-fee-payment-monthly-data/', AccountantViews.get_madrasatul_fee_payment_monthly_data, name='accountant_get_madrasatul_fee_payment_monthly_data'),
+    path('admin/transport-fee-payment-monthly-data/', AccountantViews.get_transport_fee_payment_monthly_data, name='accountant_get_transport_fee_payment_monthly_data'),
+    path('subject-count-per-class-level/', AccountantViews.get_subject_count_per_class_level, name='accountant_get_subject_count_per_class_level'),
     # Accountant detail page
     path('accountant/detail/', AccountantViews.staff_detail, name='accountant_staff_detail'),
      path('filter-payments/', AccountantViews.filter_payments, name='accountant_filter_payments'),

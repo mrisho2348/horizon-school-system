@@ -20,15 +20,19 @@ def delete_student(request):
         return JsonResponse({'status': 'error', 'message': str(e)}) 
    
     
-@csrf_exempt      
+@csrf_exempt
 @require_POST
-def delete_exam_type(request, exam_id):
+def delete_exam_type(request):
     try:
+        exam_id = request.POST.get('exam_type_id')  # Get exam_type_id from POST data
+        if not exam_id:
+            return JsonResponse({'status': 'error', 'message': 'No exam type ID provided'})
+
         exam = get_object_or_404(ExamType, pk=exam_id)
         exam.delete()
         return JsonResponse({'status': 'success'})
     except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}) 
+        return JsonResponse({'status': 'error', 'message': str(e)})
 
     
 @csrf_exempt      

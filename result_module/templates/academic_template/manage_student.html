@@ -1,11 +1,11 @@
-{% extends 'staff_template/base_template.html' %}
+{% extends 'academic_template/base_template.html' %}
 
-{% block page_title %}
+{% block title %}
    All {{page_obj.current_class}} Registered Students
-{% endblock page_title %}
+{% endblock title %}
 
 {% block breadcrumb %}
-{% include "staff_template/modal_form.html" %}
+{% include "academic_template/modal_form.html" %}
 {% endblock breadcrumb %}
 
 {% load static %}
@@ -47,7 +47,7 @@
                                        {% endif %}
                                 </td>
                                     <td>{{ student.full_name }}</td>
-                                    <td>{{ student.current_class }}</td>
+                                    <td>{{ student.class_level }}</td>
                                     <td>      <script>
                                         var dob = new Date("{{ student.date_of_birth|date:'Y-m-d' }}");
                                         var now = new Date();
@@ -58,7 +58,7 @@
                                     </script>
                                 </td>
                                     <td>{{ student.gender }}</td>
-                                    <td>{{ student.phone_number }}</td>
+                                    <td>{{ student.first_phone_number }}</td>
                                     <td>{{ student.fee_payer_number }}</td>
                                     <td>{{ student.address }}</td>
                                     <td>
@@ -88,7 +88,7 @@
                                     </td>
                                     <td>                                                                         
                                           <!-- Add the View Result button -->
-                                    <a href="{% url 'staff_student_general_attendance' student.id %}" class="btn btn-info btn-sm" data-toggle="tooltip" title="View General attendance">
+                                    <a href="{% url 'academic_student_general_attendance' student.id %}" class="btn btn-info btn-sm" data-toggle="tooltip" title="View General attendance">
                                         <i class="fa fa-eye text-dark"></i>
                                     </a>  
                                    
@@ -107,5 +107,5 @@
     </div>
 </div>
 
-{% include 'staff_template/datatable.html' %}
+{% include 'academic_template/datatable.html' %}
 {% endblock main_content %}

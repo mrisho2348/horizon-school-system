@@ -1,0 +1,28 @@
+<div class="table-responsive">
+    <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm" id="example">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Class</th>
+                <th>Amount Paid</th>
+                <th>Amount Remaining</th>
+                <th>Payment Status</th>
+                <th>Date Paid</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in student_results %}
+                <tr>
+                    <td>{{ result.student_name }}</td>
+                    <td>{{ result.class }}</td>
+                    <td>{{ result.amount_paid }}</td>
+                    <td>{{ result.amount_remaining }}</td>
+                    <td>{{ result.payment_status }}</td>
+                    <td>{{ result.date_paid }}</td>
+                </tr>           
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+  {% include 'headmaster_template/datatable.html' %}

@@ -1,4 +1,4 @@
-{% extends 'staff_template/base_template.html' %}
+{% extends 'academic_template/base_template.html' %}
 
 {% block title %}
     {{ student.full_name }} Results
@@ -101,7 +101,7 @@ $(document).ready(function() {
         // Send AJAX request to the server
         $.ajax({
             type: 'POST',
-            url: '{% url 'staff_student_subject_wise_result' %}',
+            url: '{% url 'academic_student_subject_wise_result' %}',
             data: formData,
             success: function(response) {
                 // Update the table content with the fetched data

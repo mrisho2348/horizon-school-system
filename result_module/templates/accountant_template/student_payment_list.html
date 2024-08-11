@@ -48,7 +48,7 @@ Students Payment List
                                     <td>
                                         <!-- Add edit and delete links/buttons as needed -->
                                         <a href="{% url 'accountant_edit_payment' payment.id %}" class="btn btn-sm btn-primary">Edit</a>
-                                        <a href="{% url 'accountant_delete_payment' payment.id %}" class="btn btn-sm btn-danger">Delete</a>
+                                        {% comment %} <a href="{% url 'accountant_delete_payment' payment.id %}" class="btn btn-sm btn-danger">Delete</a> {% endcomment %}
                                     </td>
                                 </tr>                               
                                 {% endfor %}

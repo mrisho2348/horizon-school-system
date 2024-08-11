@@ -1,0 +1,87 @@
+{% extends 'headmaster_template/base_template.html' %}
+
+{% block title %}
+Madrasatul Fee List
+{% endblock title %}
+
+{% block breadcrumb %}
+{% include "headmaster_template/modal_form.html" %}
+<a class="btn btn-primary float-right mr-2" type="button" href="{% url "headmaster_madrasatul_fee_create" %}">
+    <i class="fas fa-plus"></i>  Add New Fee
+</a>
+{% endblock breadcrumb %}
+
+{% load static %}
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="header-title text-center mt-0 mb-1 text-uppercase">Madrasatul Fee List</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm display" id="example" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Class Level</th>
+                                    <th>Fee Amount</th>
+                                    <th>Created At</th>
+                                    <th>Updated At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fee in fees %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ fee.class_level.class_name }}</td>
+                                    <td>{{ fee.fee_amount }}</td>
+                                    <td>{{ fee.created_at|date:"Y-m-d H:i:s" }}</td>
+                                    <td>{{ fee.updated_at|date:"Y-m-d H:i:s" }}</td>
+                                    <td>
+                                        <a href="{% url 'headmaster_madrasatul_fee_edit' fee.pk %}" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal{{ fee.pk }}">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Bootstrap Modal for Deleting Fee Structure -->
+                                <div class="modal fade" id="deleteModal{{ fee.pk }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ fee.pk }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel{{ fee.pk }}">Delete Madrasatul Fee</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to delete the Madrasatul Fee for <strong>{{ fee.category }}</strong> with amount <strong>{{ fee.amount }}</strong>?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                <form method="post" action="{% url 'headmaster_madrasatul_fee_delete' fee.pk %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'headmaster_template/datatable.html' %}
+{% endblock main_content %}

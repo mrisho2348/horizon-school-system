@@ -1,341 +1,703 @@
- 
 {% extends 'accountant_template/base_template.html' %}
-{% block title %}
-ACCOUTANT DASHBOARD
-{% endblock title %}
-
 {% block page_title %}
-ACCOUTANT DASHBOARD
+Accountant Dashboard
 {% endblock page_title %}
 {% block main_content %}
 {% load static %}
 <section class="content">
     <div class="container-fluid">
-      <div class="row">
-        <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-info">
-                <div class="inner">
-                    <h3>{{ student_count }}</h3>
-                    <p>STUDENTS</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <a href="{% url 'accountant_student_list' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-success">
-                <div class="inner">
-                    <h3>{{ total_fees_collected }}</h3>
-                    <p>TOTAL FEES COLLECTED</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-dollar-sign"></i>
-                </div>
-                <a href="{% url 'accountant_fees_collected' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-warning">
-                <div class="inner">
-                    <h3>{{ pending_payments_count }}</h3>
-                    <p>PENDING PAYMENTS</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <a href="{% url 'accountant_pending_payments' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-6">
-            <!-- small box -->
-            <div class="small-box bg-danger">
-                <div class="inner">
-                    <h3>{{ total_expenditure }}</h3>
-                    <p>TOTAL EXPENDITURE</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <a href="{% url 'accountant_expenditure' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <!-- ./col -->
-    </div>
-    <div class="row">
-        <div class="col-lg-4 col-6">       
-            <div class="small-box bg-info">
-                <div class="inner">
-                    <h3>{{ total_amount }}</h3>
-                    <p>Total Amount from Registration Payments</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-money-bill-wave"></i>
-                </div>
-                <a href="{% url "accountant_student_payment_list" %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <div class="col-lg-4 col-6">       
-            <div class="small-box bg-primary">
-                <div class="inner">
-                    <h3>{{ total_students }}</h3>
-                    <p>Total Students Paid Registration Fee</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-user-graduate"></i>
-                </div>
-                <a href="{% url "accountant_student_payment_list" %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <div class="col-lg-4 col-6">       
-            <div class="small-box bg-success">
-                <div class="inner">
-                    <h3>{{ net_profit }}</h3>
-                    <p>Net Profit</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-    </div>
-    
         <div class="row">
-          <div class="col-md-7">
-            <div class="container-fluid">
-                <div class="card card-primary">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h5 class="card-title">Financial Overview</h5>
-                            </div>
-                            <div class="col-md-6">
-                                <!-- Form with Select Fields -->
-                                <form>
-                                    <div class="form-group">
-                                        <label for="yearSelect">Select Year:</label>
-                                        <select class="form-control select2bs4" style="width: 100%;" id="yearSelect">
-                                            <option value="2022">2022</option>
-                                            <option value="2023">2023</option>
-                                            <option value="2024">2024</option>
-                                            <!-- Add more options as needed -->
-                                        </select>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>{{ total_fees_collected }}</h3>
+                        <p>TOTAL FEES COLLECTED</p>
                     </div>
-                    <div class="card-body">
-                        <canvas id="schoolFeesChart"></canvas>
+                    <div class="icon">
+                        <i class="fas fa-dollar-sign"></i>
                     </div>
+                    <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>{{ pending_payments_count }}</h3>
+                        <p>PENDING PAYMENTS</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>{{ total_expenditure }}</h3>
+                        <p>TOTAL EXPENDITURE</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <a href="{% url 'accountant_expenditure_list' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- ./col -->
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{ total_students }}</h3>
+                        <p>TOTAL STUDENTS IN OUR SCHOOL</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <a href="{% url 'accountant_student_list' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>{{ total_subjects }}</h3>
+                        <p>TOTAL SUBJECTS</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">&nbsp<i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{ net_profit }}</h3>
+                        <p>Net Profit</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
         </div>
-        <div class="col-md-5">
-          <div class="card">
-              <div class="card-header">
-                  <h6 class="text-uppercase text-muted mt-2 m-0 font-11">Financial Metrics (TSH)</h6>
+        
+        <div class="row">
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3>{{ total_school_fees }}</h3>
+                        <p>Total School Fees Collected</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-school"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-secondary">
+                    <div class="inner">
+                        <h3>{{ total_madrasatul_fees }}</h3>
+                        <p>Total Madrasatul Fees Collected</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{ total_transport_fees }}</h3>
+                        <p>Total Transport Fees Collected</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-bus"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+        </div>
+        
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">TOTAL MALE AND FEMALE</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
               </div>
-              <div class="card-body">
-                  <div class="apexchart-wrapper">
-                      <!-- The chart will be dynamically generated here -->
+            </div>
+            <div class="card-body">
+              <canvas id="donutChart2" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+            </div>
+            <!-- /.card-body -->
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">TOTAL STUDENTS CLASS WISE</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <canvas id="numberOfStudent" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+            </div>
+            <!-- /.card-body -->
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-7">
+          <div class="container-fluid">
+              <div class="card card-primary">
+                  <div class="card-header">
+                      <div class="row">
+                          <div class="col-md-6">
+                              <h5 class="card-title">Financial Overview</h5>
+                          </div>
+                          <div class="col-md-6">
+                              <!-- Form with Select Fields -->
+                              <form>
+                                  <div class="form-group">
+                                      <label for="yearSelect">Select Year:</label>
+                                      <select class="form-control select2bs4" style="width: 100%;" id="yearSelect">
+                                          <option value="2022">2022</option>
+                                          <option value="2023">2023</option>
+                                          <option value="2024">2024</option>
+                                          <!-- Add more options as needed -->
+                                      </select>
+                                  </div>
+                              </form>
+                          </div>
+                      </div>
                   </div>
-                  <span class="h4 fw-bold" id="totalIncome">0 TSH</span>
-      
-                  <div class="progress mt-3 rounded" id="financialProgress">
-                      <!-- Progress bars will be dynamically generated here -->
+                  <div class="card-body">
+                      <canvas id="schoolFeesChart"></canvas>
                   </div>
-                  <ul class="list-unstyled mb-0">
-                      <li class="list-item mt-3 fw-semibold d-flex justify-content-between align-items-center">
-                          <span>
-                              <i class="fas fa-circle font-10 text-primary me-2"></i>Fees Collected
-                          </span>
-                          <p class="align-self-center mb-0 fw-semibold" id="feesCollected">0 TSH</p>
-                      </li>
-                      <li class="list-item mt-2 fw-semibold d-flex justify-content-between align-items-center">
-                          <span>
-                              <i class="fas fa-circle font-10 text-info me-2"></i>Expenditure
-                          </span>
-                          <p class="align-self-center mb-0 fw-semibold" id="expenditure">0 TSH</p>
-                      </li>
-                  </ul>
               </div>
           </div>
       </div>
-      <script>
-          document.addEventListener('DOMContentLoaded', function () {
-              function updateFinancialContent(selectedYear) {
-                  $.ajax({
-                      url: '{% url "accountant_get_financial_yearly_data" %}',
-                      method: 'GET',
-                      data: { 'year': selectedYear },
-                      success: function (data) {
-                          var feesCollected = parseFloat(data['income']) || 0;
-                          var expenditure = parseFloat(data['expenditure']) || 0;
+      <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="text-uppercase text-muted mt-2 m-0 font-11">Financial Metrics (TSH)</h6>
+            </div>
+            <div class="card-body">
+                <div class="apexchart-wrapper">
+                    <!-- The chart will be dynamically generated here -->
+                </div>
+                <span class="h4 fw-bold" id="totalIncome">0 TSH</span>
+    
+                <div class="progress mt-3 rounded" id="financialProgress">
+                    <!-- Progress bars will be dynamically generated here -->
+                </div>
+                <ul class="list-unstyled mb-0">
+                    <li class="list-item mt-3 fw-semibold d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-circle font-10 text-primary me-2"></i>Fees Collected
+                        </span>
+                        <p class="align-self-center mb-0 fw-semibold" id="feesCollected">0 TSH</p>
+                    </li>
+                    <li class="list-item mt-2 fw-semibold d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-circle font-10 text-info me-2"></i>Expenditure
+                        </span>
+                        <p class="align-self-center mb-0 fw-semibold" id="expenditure">0 TSH</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function updateFinancialContent(selectedYear) {
+                $.ajax({
+                    url: '{% url "accountant_get_financial_yearly_data" %}',
+                    method: 'GET',
+                    data: { 'year': selectedYear },
+                    success: function (data) {
+                        var feesCollected = parseFloat(data['income']) || 0;
+                        var expenditure = parseFloat(data['expenditure']) || 0;
+    
+                        var totalIncome = feesCollected + expenditure;
+                        var netRevenue = feesCollected - expenditure;
+    
+                        // Update the total income (net revenue)
+                        document.getElementById('totalIncome').textContent = formatCurrency(netRevenue);
+    
+                        // Update the progress bars only if totalIncome is greater than 0
+                        if (totalIncome > 0) {
+                            var financialProgress = document.getElementById('financialProgress');
+                            financialProgress.innerHTML = `
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: ${(feesCollected / totalIncome) * 100}%" aria-valuenow="${feesCollected}" aria-valuemin="0" aria-valuemax="${totalIncome}"></div>
+                                <div class="progress-bar bg-info" role="progressbar" style="width: ${(expenditure / totalIncome) * 100}%" aria-valuenow="${expenditure}" aria-valuemin="0" aria-valuemax="${totalIncome}"></div>
+                            `;
+                        } else {
+                            document.getElementById('financialProgress').innerHTML = ''; // Clear progress bars if no data
+                        }
+    
+                        // Update the fees collected amount
+                        document.getElementById('feesCollected').textContent = formatCurrency(feesCollected);
+    
+                        // Update the expenditure amount
+                        document.getElementById('expenditure').textContent = formatCurrency(expenditure);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error fetching data:', error);
+                    }
+                });
+            }
+    
+            // Function to format amount with currency symbol
+            function formatCurrency(amount) {
+                // Assuming "TZS" is the Tanzanian Shilling symbol
+                return new Intl.NumberFormat('en-TZ', { style: 'currency', currency: 'TZS' }).format(amount);
+            }
+    
+            // Event listener for the year select input
+            document.getElementById('yearSelect').addEventListener('change', function (event) {
+                var selectedYear = event.target.value;
+                updateFinancialContent(selectedYear);
+            });
+    
+            // Initial update based on the default year (e.g., 2022)
+            updateFinancialContent('2022');
+        });
+    </script>  
       
-                          var totalIncome = feesCollected + expenditure;
-                          var netRevenue = feesCollected - expenditure;
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Reg And Boarding Fee Payment Income</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="feePaymentChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
       
-                          // Update the total income (net revenue)
-                          document.getElementById('totalIncome').textContent = formatCurrency(netRevenue);
-      
-                          // Update the progress bars only if totalIncome is greater than 0
-                          if (totalIncome > 0) {
-                              var financialProgress = document.getElementById('financialProgress');
-                              financialProgress.innerHTML = `
-                                  <div class="progress-bar bg-primary" role="progressbar" style="width: ${(feesCollected / totalIncome) * 100}%" aria-valuenow="${feesCollected}" aria-valuemin="0" aria-valuemax="${totalIncome}"></div>
-                                  <div class="progress-bar bg-info" role="progressbar" style="width: ${(expenditure / totalIncome) * 100}%" aria-valuenow="${expenditure}" aria-valuemin="0" aria-valuemax="${totalIncome}"></div>
-                              `;
-                          } else {
-                              document.getElementById('financialProgress').innerHTML = ''; // Clear progress bars if no data
-                          }
-      
-                          // Update the fees collected amount
-                          document.getElementById('feesCollected').textContent = formatCurrency(feesCollected);
-      
-                          // Update the expenditure amount
-                          document.getElementById('expenditure').textContent = formatCurrency(expenditure);
-                      },
-                      error: function (xhr, status, error) {
-                          console.error('Error fetching data:', error);
-                      }
-                  });
-              }
-      
-              // Function to format amount with currency symbol
-              function formatCurrency(amount) {
-                  // Assuming "TZS" is the Tanzanian Shilling symbol
-                  return new Intl.NumberFormat('en-TZ', { style: 'currency', currency: 'TZS' }).format(amount);
-              }
-      
-              // Event listener for the year select input
-              document.getElementById('yearSelect').addEventListener('change', function (event) {
-                  var selectedYear = event.target.value;
-                  updateFinancialContent(selectedYear);
-              });
-      
-              // Initial update based on the default year (e.g., 2022)
-              updateFinancialContent('2022');
-          });
-      </script>
-      
-        
+        <div class="col-lg-6">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Madrasatul Fee Payment Income</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="madrasatulFeePaymentChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       
-        <div class="row">
-            <div class="col-lg-6">
-                <!-- PIE CHART -->
-                <div class="card card-danger">
-                    <div class="card-header">
-                        <h3 class="card-title">Class-wise Fee Payments</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <button type="button" class="btn btn-tool" data-card-widget="remove">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="classwiseFeePaymentsChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-                    </div>
-                    <!-- /.card-body -->
-                </div>
-                <!-- /.card -->
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Transport Fee Payment Income</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+              </div>
             </div>
-            <div class="col-lg-6">
-                <!-- BAR CHART -->
-                <div class="card card-success">
-                    <div class="card-header">
-                        <h3 class="card-title">Monthly Expenditure</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <button type="button" class="btn btn-tool" data-card-widget="remove">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart">
-                            <canvas id="expenditureChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-                        </div>
-                    </div>
-                    <!-- /.card-body -->
-                </div>
-                <!-- /.card -->
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="transportFeePaymentChart"></canvas>
+              </div>
             </div>
-        </div>        
+          </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card card-primary">
+              <div class="card-header">
+                <h3 class="card-title">TOTAL SUBJECTS CLASS WISE</h3>
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+              <div class="card-body">
+                <canvas id="subjectCountChart"></canvas>
+              </div>
+              <!-- /.card-body -->
+            </div>
+          </div>
+      </div>
+      
+    <div class="row">   
+      <div class="col-lg-6">
+          <!-- BAR CHART -->
+          <div class="card card-success">
+              <div class="card-header">
+                  <h3 class="card-title">Monthly Expenditure</h3>
+                  <div class="card-tools">
+                      <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                          <i class="fas fa-minus"></i>
+                      </button>
+                      <button type="button" class="btn btn-tool" data-card-widget="remove">
+                          <i class="fas fa-times"></i>
+                      </button>
+                  </div>
+              </div>
+              <div class="card-body">
+                  <div class="chart">
+                      <canvas id="expenditureChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                  </div>
+              </div>
+              <!-- /.card-body -->
+          </div>
+          <!-- /.card -->
+      </div>
+  </div>        
     </div><!-- /.container-fluid -->
 </section>
 {% endblock main_content %}
 
+{% block customer_js %}
 
-  {% block customer_js %}
-
-  <script>
-    var classwiseFeePaymentsChart;
-
-    function fetchClasswiseFeePaymentData(year) {
-        $.ajax({
-            url: '{% url "accountant_get_classwise_fee_payment_data" %}',
-            method: 'GET',
-            data: { 'year': year },  // Optionally send year as a parameter
-            success: function(data) {
-                createClasswiseFeePaymentsChart(data);
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching data:', error);
-                // Optionally handle error display or retry mechanism
-            }
-        });
-    }
-
-    function createClasswiseFeePaymentsChart(data) {
-        var ctx = document.getElementById('classwiseFeePaymentsChart').getContext('2d');
-
-        // If the chart instance exists, destroy it to create a new one
-        if (classwiseFeePaymentsChart) {
-            classwiseFeePaymentsChart.destroy();
+<script>
+    $(document).ready(function() {
+        function fetchSubjectCountData() {
+            $.ajax({
+                url: '{% url "accountant_get_subject_count_per_class_level" %}',
+                method: 'GET',
+                success: function(data) {
+                    createSubjectCountChart(data);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching data:', error);
+                }
+            });
         }
 
-        // Create new chart instance
-        classwiseFeePaymentsChart = new Chart(ctx, {
-            type: 'bar',
+        function createSubjectCountChart(data) {
+            var ctx = $('#subjectCountChart')[0].getContext('2d');
+
+            var labels = data.map(entry => entry['class_level__class_name']);
+            var counts = data.map(entry => entry.subject_count);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Subjects per Class Level',
+                        data: counts,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            enabled: true
+                        }
+                    }
+                }
+            });
+        }
+
+        fetchSubjectCountData();
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Function to fetch data and render the chart
+        function fetchAndRenderChart() {
+            $.ajax({
+                url: '{% url "accountant_fetch_students_per_class" %}', // URL to fetch data from
+                method: 'GET',
+                success: function(response) {
+                    // Data received from the server
+                    var labels = response.labels;
+                    var data = response.data;
+    
+                    // Chart.js configuration
+                    var ctx = document.getElementById('numberOfStudent').getContext('2d');
+                    var numberOfStudentChart = new Chart(ctx, {
+                        type: 'bar', // Bar chart type
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Total Students',
+                                data: data,
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true // Start y-axis from zero
+                                }
+                            }
+                        }
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to fetch student data:', xhr.responseText);
+                }
+            });
+        }
+    
+        // Call the function to fetch data and render the chart
+        fetchAndRenderChart();
+    });
+    </script>
+
+
+<script>
+  var classwiseFeePaymentsChart;
+
+  function fetchClasswiseFeePaymentData(year) {
+      $.ajax({
+          url: '{% url "accountant_get_classwise_fee_payment_data" %}',
+          method: 'GET',
+          data: { 'year': year },  // Optionally send year as a parameter
+          success: function(data) {
+              createClasswiseFeePaymentsChart(data);
+          },
+          error: function(xhr, status, error) {
+              console.error('Error fetching data:', error);
+              // Optionally handle error display or retry mechanism
+          }
+      });
+  }
+
+  function createClasswiseFeePaymentsChart(data) {
+      var ctx = document.getElementById('classwiseFeePaymentsChart').getContext('2d');
+
+      // If the chart instance exists, destroy it to create a new one
+      if (classwiseFeePaymentsChart) {
+          classwiseFeePaymentsChart.destroy();
+      }
+
+      // Create new chart instance
+      classwiseFeePaymentsChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: data.map(entry => entry.class_name),
+              datasets: [{
+                  label: 'Number of Students',
+                  data: data.map(entry => entry.fee_payments_count),
+                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  borderWidth: 1
+              }]
+          },
+          options: {
+              scales: {
+                  y: {
+                      beginAtZero: true,
+                      title: {
+                          display: true,
+                          text: 'Number of Students'
+                      }
+                  },
+                  x: {
+                      title: {
+                          display: true,
+                          text: 'Class Name'
+                      }
+                  }
+              },
+              plugins: {
+                  tooltip: {
+                      enabled: true,
+                      mode: 'index',
+                      intersect: false,
+                  },
+                  legend: {
+                      display: false,
+                  }
+              },
+              responsive: true,
+              maintainAspectRatio: false
+          }
+      });
+  }
+
+  // Example usage: Fetch data and create chart on page load
+  var selectedYear = $('#yearSelect').val();  // Assuming you have a select element for year
+  fetchClasswiseFeePaymentData(selectedYear);
+
+  // Event listener to fetch data and update the chart when the year is changed
+  $('#yearSelect').on('change', function() {
+      var selectedYear = $(this).val();
+      fetchClasswiseFeePaymentData(selectedYear);
+  });
+</script>
+
+<script>
+    
+  var madrasatulFeePaymentChart;
+
+  function fetchMadrasatulFeePaymentMonthlyData(year) {
+      $.ajax({
+          url: '{% url "accountant_get_madrasatul_fee_payment_monthly_data" %}',
+          method: 'GET',
+          data: { 'year': year },
+          success: function(data) {
+              createMadrasatulFeePaymentChart(data);
+          },
+          error: function(xhr, status, error) {
+              console.error('Error fetching data:', error);
+          }
+      });
+  }
+  
+  function createMadrasatulFeePaymentChart(data) {
+      var ctx = document.getElementById('madrasatulFeePaymentChart').getContext('2d');
+  
+      if (madrasatulFeePaymentChart) {
+          madrasatulFeePaymentChart.data.labels = data.map(entry => entry.month);
+          madrasatulFeePaymentChart.data.datasets[0].data = data.map(entry => entry.income);
+          madrasatulFeePaymentChart.update();
+      } else {
+          madrasatulFeePaymentChart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: data.map(entry => entry.month),
+                  datasets: [{
+                      label: 'Madrasatul Fee Payment Income',
+                      data: data.map(entry => entry.income),
+                      borderColor: 'rgba(255, 206, 86, 1)',
+                      borderWidth: 2,
+                      fill: false
+                  }]
+              },
+              options: {
+                  scales: {
+                      y: {
+                          beginAtZero: true
+                      }
+                  },
+                  plugins: {
+                      tooltip: {
+                          enabled: true,
+                          mode: 'index',
+                          intersect: false,
+                      },
+                      legend: {
+                          display: true,
+                          position: 'bottom'
+                      }
+                  },
+                  hover: {
+                      mode: 'index',
+                      intersect: false
+                  }
+              }
+          });
+      }
+  }
+  
+  var selectedYearMadrasatulFeePayment = $('#yearSelect').val();
+  fetchMadrasatulFeePaymentMonthlyData(selectedYearMadrasatulFeePayment);
+  
+  $('#yearSelect').on('change', function() {
+      var selectedYear = $(this).val();
+      fetchMadrasatulFeePaymentMonthlyData(selectedYear);
+  });
+  
+</script>
+
+<script>
+    
+var transportFeePaymentChart;
+
+function fetchTransportFeePaymentMonthlyData(year) {
+    $.ajax({
+        url: '{% url "accountant_get_transport_fee_payment_monthly_data" %}',
+        method: 'GET',
+        data: { 'year': year },
+        success: function(data) {
+            createTransportFeePaymentChart(data);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching data:', error);
+        }
+    });
+}
+
+function createTransportFeePaymentChart(data) {
+    var ctx = document.getElementById('transportFeePaymentChart').getContext('2d');
+
+    if (transportFeePaymentChart) {
+        transportFeePaymentChart.data.labels = data.map(entry => entry.month);
+        transportFeePaymentChart.data.datasets[0].data = data.map(entry => entry.income);
+        transportFeePaymentChart.update();
+    } else {
+        transportFeePaymentChart = new Chart(ctx, {
+            type: 'line',
             data: {
-                labels: data.map(entry => entry.class_name),
+                labels: data.map(entry => entry.month),
                 datasets: [{
-                    label: 'Number of Students',
-                    data: data.map(entry => entry.fee_payments_count),
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
+                    label: 'Transport Fee Payment Income',
+                    data: data.map(entry => entry.income),
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 2,
+                    fill: false
                 }]
             },
             options: {
                 scales: {
                     y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Number of Students'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Class Name'
-                        }
+                        beginAtZero: true
                     }
                 },
                 plugins: {
@@ -345,110 +707,113 @@ ACCOUTANT DASHBOARD
                         intersect: false,
                     },
                     legend: {
-                        display: false,
+                        display: true,
+                        position: 'bottom'
                     }
                 },
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-    }
-
-    // Example usage: Fetch data and create chart on page load
-    var selectedYear = $('#yearSelect').val();  // Assuming you have a select element for year
-    fetchClasswiseFeePaymentData(selectedYear);
-
-    // Event listener to fetch data and update the chart when the year is changed
-    $('#yearSelect').on('change', function() {
-        var selectedYear = $(this).val();
-        fetchClasswiseFeePaymentData(selectedYear);
-    });
-</script>
- 
-
-  <script>
-    var schoolFeesChart;
-
-    function fetchSchoolFeesMonthlyData(year) {
-        $.ajax({
-            url: '{% url "accountant_get_school_fees_monthly_data" %}',
-            method: 'GET',
-            data: { 'year': year },
-            success: function(data) {
-                createSchoolFeesChart(data);
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching data:', error);
-            }
-        });
-    }
-
-    function createSchoolFeesChart(data) {
-        var ctx = document.getElementById('schoolFeesChart').getContext('2d');
-
-        if (schoolFeesChart) {
-            schoolFeesChart.data.labels = data.map(entry => entry.month);
-            schoolFeesChart.data.datasets[0].data = data.map(entry => entry.income);
-            schoolFeesChart.update();
-        } else {
-            schoolFeesChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.map(entry => entry.month),
-                    datasets: [{
-                        label: 'School Fees Income',
-                        data: data.map(entry => entry.income),
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 2,
-                        fill: false
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            enabled: true,
-                            mode: 'index',
-                            intersect: false,
-                        },
-                        legend: {
-                            display: true,
-                            position: 'bottom'
-                        }
-                    },
-                    hover: {
-                        mode: 'index',
-                        intersect: false
-                    }
+                hover: {
+                    mode: 'index',
+                    intersect: false
                 }
-            });
-        }
+            }
+        });
     }
+}
 
-    var selectedYearSchoolFees = $('#yearSelect').val();
-    fetchSchoolFeesMonthlyData(selectedYearSchoolFees);
+var selectedYearTransportFeePayment = $('#yearSelect').val();
+fetchTransportFeePaymentMonthlyData(selectedYearTransportFeePayment);
 
-    $('#yearSelect').on('change', function() {
-        var selectedYear = $(this).val();
-        fetchSchoolFeesMonthlyData(selectedYear);
-    });
+$('#yearSelect').on('change', function() {
+    var selectedYear = $(this).val();
+    fetchTransportFeePaymentMonthlyData(selectedYear);
+});
 
 </script>
 
 <script>
-  var expenditureChart;
+    
 
-  function fetchExpenditureMonthlyData(year) {
+  var feePaymentChart;
+
+  function fetchFeePaymentMonthlyData(year) {
       $.ajax({
-          url: '{% url "accountant_get_expenditure_monthly_data" %}',
+          url: '{% url "accountant_get_fee_payment_monthly_data" %}',
           method: 'GET',
           data: { 'year': year },
           success: function(data) {
-              createExpenditureChart(data);
+              createFeePaymentChart(data);
+          },
+          error: function(xhr, status, error) {
+              console.error('Error fetching data:', error);
+          }
+      });
+  }
+  
+  function createFeePaymentChart(data) {
+      var ctx = document.getElementById('feePaymentChart').getContext('2d');
+  
+      if (feePaymentChart) {
+          feePaymentChart.data.labels = data.map(entry => entry.month);
+          feePaymentChart.data.datasets[0].data = data.map(entry => entry.income);
+          feePaymentChart.update();
+      } else {
+          feePaymentChart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: data.map(entry => entry.month),
+                  datasets: [{
+                      label: 'Fee Payment Income',
+                      data: data.map(entry => entry.income),
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      borderWidth: 2,
+                      fill: false
+                  }]
+              },
+              options: {
+                  scales: {
+                      y: {
+                          beginAtZero: true
+                      }
+                  },
+                  plugins: {
+                      tooltip: {
+                          enabled: true,
+                          mode: 'index',
+                          intersect: false,
+                      },
+                      legend: {
+                          display: true,
+                          position: 'bottom'
+                      }
+                  },
+                  hover: {
+                      mode: 'index',
+                      intersect: false
+                  }
+              }
+          });
+      }
+  }
+  
+  var selectedYearFeePayment = $('#yearSelect').val();
+  fetchFeePaymentMonthlyData(selectedYearFeePayment);
+  
+  $('#yearSelect').on('change', function() {
+      var selectedYear = $(this).val();
+      fetchFeePaymentMonthlyData(selectedYear);
+  });
+</script>
+
+<script>
+  var schoolFeesChart;
+
+  function fetchSchoolFeesMonthlyData(year) {
+      $.ajax({
+          url: '{% url "accountant_get_school_fees_monthly_data" %}',
+          method: 'GET',
+          data: { 'year': year },
+          success: function(data) {
+              createSchoolFeesChart(data);
           },
           error: function(xhr, status, error) {
               console.error('Error fetching data:', error);
@@ -456,22 +821,22 @@ ACCOUTANT DASHBOARD
       });
   }
 
-  function createExpenditureChart(data) {
-      var ctx = document.getElementById('expenditureChart').getContext('2d');
+  function createSchoolFeesChart(data) {
+      var ctx = document.getElementById('schoolFeesChart').getContext('2d');
 
-      if (expenditureChart) {
-          expenditureChart.data.labels = data.map(entry => entry.month);
-          expenditureChart.data.datasets[0].data = data.map(entry => entry.expenditure);
-          expenditureChart.update();
+      if (schoolFeesChart) {
+          schoolFeesChart.data.labels = data.map(entry => entry.month);
+          schoolFeesChart.data.datasets[0].data = data.map(entry => entry.income);
+          schoolFeesChart.update();
       } else {
-          expenditureChart = new Chart(ctx, {
+          schoolFeesChart = new Chart(ctx, {
               type: 'line',
               data: {
                   labels: data.map(entry => entry.month),
                   datasets: [{
-                      label: 'Expenditure',
-                      data: data.map(entry => entry.expenditure),
-                      borderColor: 'rgba(255, 99, 132, 1)',
+                      label: 'School Fees Income',
+                      data: data.map(entry => entry.income),
+                      borderColor: 'rgba(54, 162, 235, 1)',
                       borderWidth: 2,
                       fill: false
                   }]
@@ -502,15 +867,120 @@ ACCOUTANT DASHBOARD
       }
   }
 
-  var selectedYearExpenditure = $('#yearSelect').val();
-  fetchExpenditureMonthlyData(selectedYearExpenditure);
+  var selectedYearSchoolFees = $('#yearSelect').val();
+  fetchSchoolFeesMonthlyData(selectedYearSchoolFees);
 
   $('#yearSelect').on('change', function() {
       var selectedYear = $(this).val();
-      fetchExpenditureMonthlyData(selectedYear);
+      fetchSchoolFeesMonthlyData(selectedYear);
   });
+
+  
+
+
 
 </script>
 
+<script>
+var expenditureChart;
 
+function fetchExpenditureMonthlyData(year) {
+    $.ajax({
+        url: '{% url "accountant_get_expenditure_monthly_data" %}',
+        method: 'GET',
+        data: { 'year': year },
+        success: function(data) {
+            createExpenditureChart(data);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching data:', error);
+        }
+    });
+}
+
+function createExpenditureChart(data) {
+    var ctx = document.getElementById('expenditureChart').getContext('2d');
+
+    if (expenditureChart) {
+        expenditureChart.data.labels = data.map(entry => entry.month);
+        expenditureChart.data.datasets[0].data = data.map(entry => entry.expenditure);
+        expenditureChart.update();
+    } else {
+        expenditureChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(entry => entry.month),
+                datasets: [{
+                    label: 'Expenditure',
+                    data: data.map(entry => entry.expenditure),
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        enabled: true,
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                },
+                hover: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        });
+    }
+}
+
+var selectedYearExpenditure = $('#yearSelect').val();
+fetchExpenditureMonthlyData(selectedYearExpenditure);
+
+$('#yearSelect').on('change', function() {
+    var selectedYear = $(this).val();
+    fetchExpenditureMonthlyData(selectedYear);
+});
+
+</script>
+
+<script>
+  $(document).ready(function(){
+    var gender_labels = ['Male', 'Female'];  // Labels for male and female
+    var gender_counts = [{{ total_male_students }}, {{ total_female_students }}];  // Values from Django context
+
+    var donutChartCanvas2 = $('#donutChart2').get(0).getContext('2d');
+    var donutData2 = {
+        labels: gender_labels,
+        datasets: [
+            {
+                data: gender_counts,
+                backgroundColor: ['#f56954', '#00a65a'],
+            }
+        ]
+    };
+    var donutOptions2 = {
+        maintainAspectRatio: false,
+        responsive: true,
+    };
+
+    // Create pie or doughnut chart
+    var donutChart2 = new Chart(donutChartCanvas2, {
+        type: 'doughnut',
+        data: donutData2,
+        options: donutOptions2
+    }); 
+  });
+</script>
 {% endblock customer_js %}
+

@@ -1,0 +1,85 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block title %}
+   All Class Levels
+{% endblock title %}
+
+{% block breadcrumb %}
+{% include "hod_template/modal_form.html" %}
+<a class="btn btn-primary float-right mr-2" type="button" href="{% url "admin_classlevel_create" %}">
+    <i class="fas fa-plus"></i> New Class Levels
+</a>
+{% endblock breadcrumb %}
+
+{% load static %}
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="header-title text-center mt-0 mb-1 text-uppercase">List of Class Levels</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm display" id="example" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Class Name</th>
+                                    <th>Created At</th>
+                                    <th>Updated At</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-table-body">
+                                {% for class_level in class_levels %}
+                                <tr>
+                                    <td>{{ class_level.class_name }}</td>
+                                    <td>{{ class_level.created_at }}</td>
+                                    <td>{{ class_level.updated_at }}</td>
+                                    <td>
+                                        <a href="{% url 'admin_classlevel_edit' class_level.pk %}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal{{ class_level.pk }}">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Bootstrap Modal for Deleting Class Level -->
+                                <div class="modal fade" id="deleteModal{{ class_level.pk }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ class_level.pk }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel{{ class_level.pk }}">Delete Class Level</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to delete the class level <strong>{{ class_level.class_name }}</strong>?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                <form method="post" action="{% url 'admin_classlevel_delete' class_level.pk %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'hod_template/datatable.html' %}
+{% endblock main_content %}

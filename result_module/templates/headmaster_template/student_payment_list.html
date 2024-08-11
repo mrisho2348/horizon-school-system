@@ -1,11 +1,11 @@
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 
 {% block title %}
 Students Payment List
 {% endblock title %}
 
 {% block breadcrumb %}
-{% include "hod_template/modal_form.html" %}
+{% include "headmaster_template/modal_form.html" %}
 {% endblock breadcrumb %}
 
 {% load static %}
@@ -52,5 +52,5 @@ Students Payment List
     </div>
 </div>
 
-{% include 'hod_template/datatable.html' %}
+{% include 'headmaster_template/datatable.html' %}
 {% endblock main_content %}

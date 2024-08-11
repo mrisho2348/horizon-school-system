@@ -1,0 +1,89 @@
+{% extends 'headmaster_template/base_template.html' %}
+
+{% block title %}
+    {% if is_edit %} Edit Madrasatul Fee Payment {% else %} New Madrasatul Fee Payment {% endif %}
+{% endblock title %}
+
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        {% if is_edit %} Edit Madrasatul Fee Payment {% else %} New Madrasatul Fee Payment {% endif %}
+                    </h3>
+                </div>
+                <div class="container-fluid">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.student.id_for_label }}">{{ form.student.label }}</label>
+                                {{ form.student }}
+                                {% if form.student.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.student.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.matrasatul_fee.id_for_label }}">{{ form.matrasatul_fee.label }}</label>
+                                {{ form.matrasatul_fee }}
+                                {% if form.matrasatul_fee.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.matrasatul_fee.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.amount_paid.id_for_label }}">{{ form.amount_paid.label }}</label>
+                                {{ form.amount_paid }}
+                                {% if form.amount_paid.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.amount_paid.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.payment_date.id_for_label }}">{{ form.payment_date.label }}</label>
+                                {{ form.payment_date }}
+                                {% if form.payment_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.payment_date.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="submit" name="action" value="save" class="btn btn-primary btn-block">Save</button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" name="action" value="save_and_continue" class="btn btn-secondary btn-block">Save and Add Another</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mt-3">
+                            {% if messages %}
+                                <div class="col-12">
+                                    {% for message in messages %}
+                                        {% if message.tags == 'error' %}
+                                            <div class="alert alert-danger">{{ message }}</div>
+                                        {% elif message.tags == 'success' %}
+                                            <div class="alert alert-primary">{{ message }}</div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}

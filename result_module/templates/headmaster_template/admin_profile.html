@@ -1,14 +1,10 @@
  
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 {% block title %}
        Edit Profile   
 {% endblock title %}
 {% block main_content %}
-{% load static %}
-<section class="content">
-    <div class="container-fluid">
-        <div class="content-wrappe">
-            <!-- Content Header (Page header) -->    
+{% load static %} 
         
             <!-- Main content -->
             <section class="content">
@@ -21,7 +17,7 @@
                       <div class="card-header">
                         <h3 class="card-title">Edit profile</h3>
                       </div>
-                      <form action="{% url 'admin_edit_profile_save' %}" method="POST">
+                      <form action="{% url 'headmaster_edit_profile_save' %}" method="POST">
                         {% csrf_token %}
                       <div class="card-body">                      
                            
@@ -81,8 +77,5 @@
               
             </section>
             <!-- /.content -->
-          </div>
-    </div><!-- /.container-fluid -->
-  </section>
 
   {% endblock main_content %}

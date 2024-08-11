@@ -1,11 +1,11 @@
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 {% block page_title %}
 Exam Types Information  
 {% endblock page_title %}
 
 
 {% block breadcrumb %}
-{% include "hod_template/modal_form.html" %}
+{% include "headmaster_template/modal_form.html" %}
 <a class="btn btn-primary float-right" type="button" data-toggle="modal" data-target="#addExamTypeModal">
     <i class="fas fa-plus"></i> New Exam Types 
 </a>
@@ -65,28 +65,31 @@ Exam Types Information
                                     </div>
                         
                                     <script>
-                                        function deleteExam_type(exam_typeId) {
-                                            $.ajax({
-                                                type: 'POST',
-                                                url: '/delete_exam_type/' + exam_typeId + '/',  // Replace with your URL
-                                                data: {},
-                                                success: function (data) {
-                                                    if (data.status === 'success') {
-                                                        $('#deleteExam_typeModal' + exam_typeId).modal('hide');
-                                                        location.reload(true);
-                                                        // Refresh the category list or perform any other actions
-                                                    } else {
-                                                        // Handle other status cases if needed
-                                                        alert(data.message);
-                                                    }
-                                                },
-                                                error: function (error) {
-                                                    alert(error);
-                                                    // Handle errors if necessary
-                                                }
-                                            });
-                                        }
-                                    </script>
+                                      function deleteExam_type(exam_typeId) {
+                                          $.ajax({
+                                              type: 'POST',
+                                              url: '{% url "headmaster_delete_exam_type" %}',  // Your URL without exam_typeId in the path
+                                              data: {
+                                                  exam_type_id: exam_typeId  // Pass the exam_typeId as part of the POST data
+                                              },
+                                              success: function (data) {
+                                                  if (data.status === 'success') {
+                                                      $('#deleteExam_typeModal' + exam_typeId).modal('hide');
+                                                      location.reload(true);
+                                                      // Refresh the category list or perform any other actions
+                                                  } else {
+                                                      // Handle other status cases if needed
+                                                      alert(data.message);
+                                                  }
+                                              },
+                                              error: function (error) {
+                                                  alert(error);
+                                                  // Handle errors if necessary
+                                              }
+                                          });
+                                      }
+                                  </script>
+                                  
                                 </div>
                             </div>
                             
@@ -137,7 +140,7 @@ Exam Types Information
                                             e.preventDefault();
                                             $.ajax({
                                                 type: 'POST',
-                                                url: '{% url "admin_save_exam_type" %}',  // Replace with your URL
+                                                url: '{% url "headmaster_save_exam_type" %}',  // Replace with your URL
                                                 data: $('#editExamTypeForm{{ exam_type.id }}').serialize(),
                                                 success: function (data) {
                                                     if (data.status === 'success') {
@@ -218,7 +221,7 @@ Exam Types Information
     function addExamType() {
         $.ajax({
             type: 'POST',
-            url: '{% url "admin_save_exam_type" %}',  // Replace with your URL
+            url: '{% url "headmaster_save_exam_type" %}',  // Replace with your URL
             data: $('#addExamTypeForm').serialize(),
             success: function (data) {
                 if (data.status === 'success') {
@@ -237,5 +240,5 @@ Exam Types Information
         });
     }
 </script>
-{% include 'hod_template/datatable.html' %}
+{% include 'headmaster_template/datatable.html' %}
 {% endblock main_content %}

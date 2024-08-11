@@ -25,7 +25,7 @@
     </div>
   </div>
   <!-- Display Profile Picture -->
-  {% if request.user.staffs.profile_pic.url %}
+  {% if request.user.staffs.profile_pic %}
     <div class="card mb-4">
       <div class="card-header bg-primary text-white">
         Profile Picture
@@ -35,35 +35,18 @@
       </div>
     </div>
   {% endif %} 
-  <!-- Subjects -->
-  {% if staff.subjects.all %}
-    <div class="card mb-4">
-      <div class="card-header bg-primary text-white">
-        Subjects
-      </div>
-      <div class="card-body">
-        <ul>
-          {% for subject in staff.subjects.all %}
-            <li><span style="color: orange;">{{ subject.subject_name }}</span></li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-  {% endif %} 
 
-  {% if staff.subjects.all %}
     <div class="card mb-4">
     <div class="card-header bg-primary text-white">
       Academic Details
     </div>
     <div class="card-body">
-      <p class="card-text">Staff Role: {{ staff.staff_role }}</p>
-      <p class="card-text">Current Class Taught: {{ staff.current_class }}</p>
+      <p class="card-text">Staff Role: {{ staff.staff_role }}</p>     
       <p class="card-text">Date of Registration: {{ staff.created_at|date:"F d, Y" }}</p>
     </div>
   </div>
 </div>
-  {% endif %} 
+
 </div>
 
 <script>

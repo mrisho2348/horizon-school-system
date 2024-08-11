@@ -4,7 +4,7 @@
     <a href="#" class="brand-link">
       <img src="{% static 'img/zamzamLogo.jpg' %}" alt="Tabora Logo" class="brand-image img-circle elevation-3"
            style="opacity: .8">
-      <span class="brand-text font-weight-light">Zam Zam </span>
+      <span class="brand-text font-weight-light">HORIZON ACADEMY</span>
     </a>
 
     <!-- Sidebar -->
@@ -56,59 +56,85 @@
                 <li class="nav-item">
                     {% url 'accountant_fee_structure_list' as accountant_fee_structure_list_url %}
                     <a href="{{ accountant_fee_structure_list_url }}" class="nav-link {% if request.path == accountant_fee_structure_list_url %} active {% endif %}">
-                        <i class="nav-icon fas fa-coins"></i>
+                        <i class="nav-icon fas fa-file-alt"></i>
                         <p>Fee Structure</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    {% url 'accountant_student_list' as student_list_url %}          
-                    <a href="{{ student_list_url }}" class="nav-link {% if request.path == student_list_url %}active{% endif %}">
+                    {% url 'accountant_student_list' as student_list_url %}
+                    <a href="{{ student_list_url }}" class="nav-link {% if request.path == student_list_url %} active {% endif %}">
                         <i class="nav-icon fas fa-user-graduate"></i>
-                        <p>
-                            Students List
-                       </p>
+                        <p>Students List</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     {% url 'accountant_payment_list' as payment_list %}
                     <a href="{{ payment_list }}" class="nav-link {% if request.path == payment_list %} active {% endif %}">
-                        <i class="nav-icon fas fa-money-check-alt"></i>
+                        <i class="nav-icon fas fa-money-bill-wave"></i>
                         <p>School Fees Payments</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     {% url 'accountant_filter_payments' as filter_payment_url %}
                     <a href="{{ filter_payment_url }}" class="nav-link {% if request.path == filter_payment_url %} active {% endif %}">
-                        <i class="nav-icon fas fa-money-check"></i>
-                        <p>Student payments</p>
+                        <i class="nav-icon fas fa-filter"></i>
+                        <p>Student Payments</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    {% url 'accountant_student_payment_list' as student_payment_list %}
-                    <a href="{{ student_payment_list }}" class="nav-link {% if request.path == student_payment_list %} active {% endif %}">
-                        <i class="nav-icon fas fa-money-check"></i>
-                        <p>Forms payments</p>
+                    {% url 'accountant_student_payment_fetch' as student_payment_fetch_url %}
+                    <a href="{{ student_payment_fetch_url }}" class="nav-link {% if request.path == student_payment_fetch_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-wallet"></i>
+                        <p>Other Payments</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    {% url 'accountant_expenditure' as expenditure_url %}
+                    {% url 'accountant_expenditure_list' as expenditure_url %}
                     <a href="{{ expenditure_url }}" class="nav-link {% if request.path == expenditure_url %} active {% endif %}">
                         <i class="nav-icon fas fa-file-invoice-dollar"></i>
                         <p>Expenditure</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    {% url 'accountant_staff_sendfeedback' as staff_sendfeedback_url %}
-                    <a href="{{ staff_sendfeedback_url }}" class="nav-link {% if request.path == staff_sendfeedback_url %} active {% endif %}">
-                        <i class="nav-icon fas fa-comments"></i>
-                        <p>Send Feedback</p>
+                    {% url 'accountant_class_fee_list' as class_fee_list_url %}
+                    <a href="{{ class_fee_list_url }}" class="nav-link {% if request.path == class_fee_list_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-calendar-alt"></i>
+                        <p>Class Fee List</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    {% url 'accountant_staff_apply_leave' as staff_apply_leave_url %}
-                    <a href="{{ staff_apply_leave_url }}" class="nav-link {% if request.path == staff_apply_leave_url %} active {% endif %}">
-                        <i class="nav-icon fas fa-calendar-times"></i>
-                        <p>Apply for Leave</p>
+                    {% url 'accountant_madrasatul_fee_list' as madrasatul_fee_list_url %}
+                    <a href="{{ madrasatul_fee_list_url }}" class="nav-link {% if request.path == madrasatul_fee_list_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-quran"></i>
+                        <p>Madrasatul Fee List</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_transport_fee_list' as transport_fee_list_url %}
+                    <a href="{{ transport_fee_list_url }}" class="nav-link {% if request.path == transport_fee_list_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-bus"></i>
+                        <p>Transport Fee List</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_fee_payment_list' as reg_payment_list_url %}
+                    <a href="{{ reg_payment_list_url }}" class="nav-link {% if request.path == reg_payment_list_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-credit-card"></i>
+                        <p>Reg and Boarding Payment</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_madrasatul_fee_payment_list' as madrasatul_fee_payment_list_url %}
+                    <a href="{{ madrasatul_fee_payment_list_url }}" class="nav-link {% if request.path == madrasatul_fee_payment_list_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-money-check"></i>
+                        <p>Madrasa Payment</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'accountant_transport_fee_payment_list' as transport_fee_payment_list_url %}
+                    <a href="{{ transport_fee_payment_list_url }}" class="nav-link {% if request.path == transport_fee_payment_list_url %} active {% endif %}">
+                        <i class="nav-icon fas fa-truck"></i>
+                        <p>Transport Payment</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -120,6 +146,7 @@
                 </li>
             </ul>
         </nav>
+        
         <!-- /.sidebar-menu -->
     </div>
     

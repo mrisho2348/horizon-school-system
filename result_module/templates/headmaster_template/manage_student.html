@@ -1,22 +1,15 @@
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 
-{% block page_title %}
+{% block title %}
    All Registered Students
-{% endblock page_title %}
+{% endblock title %}
 
 {% block breadcrumb %}
-{% include "hod_template/modal_form.html" %}
-<a class="btn btn-success float-right mr-2" href="{% url 'admin_download_students_template' %}">
-    <i class="fas fa-download"></i> download template 
-  </a>
-
-<a class="btn btn-primary float-right mr-2" type="button" href="{% url "admin_add_student" %}">
+{% include "headmaster_template/modal_form.html" %}
+<a class="btn btn-primary float-right mr-2" type="button" href="{% url "headmaster_add_student" %}">
     <i class="fas fa-plus"></i> New Student
 </a>
-<!-- Add Import insurance link and modal trigger -->
-<a class="btn btn-success float-right mr-2" href="{% url "admin_import_student_records" %}">
-  <i class="fas fa-file-import"></i> Import Student
-</a>
+
 {% endblock breadcrumb %}
 
 {% load static %}
@@ -26,17 +19,19 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <h6  class="header-title text-center mt-0 mb-1  text-uppercase">List of Students</h6>
+                    <h6 class="header-title text-center mt-0 mb-1 text-uppercase">List of Students</h6>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm  display" id="example"  style="width:100%">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm display" id="example" style="width:100%">
                             <thead>
                                 <tr>
                                     <th>Registration Number</th>
                                     <th>Examination Number</th>
                                     <th>Full Name</th>
                                     <th>Current Class</th>
+                                    <th>Place/Branch</th>
+                                    <th>Service</th>
                                     <th>Age</th>
                                     <th>Gender</th>
                                     <th>Phone Number</th>
@@ -51,25 +46,29 @@
                                 {% for student in students %}
                                 <tr>
                                     <td>{{ student.registration_number }}</td>
-                                    <td>{% if student.examination_number %}
-                                        {{ student.examination_number }}
-                                        {% else %}
-                                        not assigned yet
-                                       {% endif %}
-                                </td>
+                                    <td>{% if student.examination_number %}{{ student.examination_number }}{% else %}not assigned yet{% endif %}</td>
                                     <td>{{ student.full_name }}</td>
-                                    <td>{{ student.current_class }}</td>
-                                    <td>      <script>
-                                        var dob = new Date("{{ student.date_of_birth|date:'Y-m-d' }}");
-                                        var now = new Date();
-                                        var ageMilliseconds = now - dob;
-                                        var ageSeconds = ageMilliseconds / 1000;
-                                        var ageYears = Math.floor(ageSeconds / (365.25 * 24 * 60 * 60));
-                                        document.write(ageYears + ' years');
-                                    </script>
-                                </td>
+                                    <td>{{ student.class_level.class_name }}</td>
+                                    <td>{{ student.branch }}</td>
+                                    <td> {% if student.services.all %}
+                                        {% for service in student.services.all %}
+                                            {{ service.name }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}</td>
+                                    <td>
+                                        <script>
+                                            var dob = new Date("{{ student.date_of_birth|date:'Y-m-d' }}");
+                                            var now = new Date();
+                                            var ageMilliseconds = now - dob;
+                                            var ageSeconds = ageMilliseconds / 1000;
+                                            var ageYears = Math.floor(ageSeconds / (365.25 * 24 * 60 * 60));
+                                            document.write(ageYears + ' years');
+                                        </script>
+                                    </td>
                                     <td>{{ student.gender }}</td>
-                                    <td>{{ student.phone_number }}</td>
+                                    <td>{{ student.first_phone_number }}</td>
                                     <td>{{ student.fee_payer_number }}</td>
                                     <td>{{ student.address }}</td>
                                     <td>
@@ -80,7 +79,7 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <form method="POST" action="{% url 'admin_update_student_status' %}">
+                                        <form method="POST" action="{% url 'headmaster_update_student_status' %}">
                                             {% csrf_token %}
                                             <input type="hidden" name="user_id" value="{{ student.id }}">
                                             <input type="hidden" name="is_active" value="{% if student.is_active %}1{% else %}0{% endif %}">
@@ -98,260 +97,23 @@
                                         </form>
                                     </td>
                                     <td>
-                                               <!-- Add the View Result button -->
-                                    <a href="{% url 'admin_edit_student' student.id %}" class="btn btn-info btn-sm" data-toggle="tooltip" title="Edit">
-                                        <i class="fa fa-edit text-white"></i>
-                                    </a> 
-                                   <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteStudentModal{{ student.id }}"  data-toggle="tooltip" title="Delete">
-                                          <i class="fas fa-trash"></i>
-                                      </button>         
-                                      <button  class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#studentDetailsModal{{ student.id }}"  data-toggle="tooltip" title="  View My Personal Info">
-                                          <i class="fa fa-eye text-dark"></i>
-                                      </button>                                    
-                                          <!-- Add the View Result button -->
-                                    <a href="{% url 'admin_student_general_attendance' student.id %}" class="btn btn-info btn-sm" data-toggle="tooltip" title="View General attendance">
-                                        <i class="fa fa-eye text-dark"></i>
-                                    </a>  
-                                    <a href="{% url 'admin_student_subject_wise_result_page' student.id %}" class="btn btn-success btn-sm" data-toggle="tooltip" title="View Result">
-                                        <i class="fa fa-file-alt text-white"></i>
-                                    </a>  
-                                      </td>
-                                     
-                    
-                    
-                        
-                                            <!-- Delete Modal -->
-                                            <div class="modal fade" id="deleteStudentModal{{ student.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteStudentModalLabel{{ student.id }}" aria-hidden="true">
-                                                <div class="modal-dialog" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="deleteStudentModalLabel{{ student.id }}">Delete Category</h5>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Are you sure you want to delete this student detail: <strong>{{ student.full_name }}</strong>?</p>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                            <button type="button" class="btn btn-danger" onclick="deleteStudent({{ student.id }})">Delete</button>
-                                                        </div>
-                                                    </div>
-                                        
-                                                    <script>
-                                                        function deleteStudent(studentId) {
-                                                            $.ajax({
-                                                                type: 'POST',
-                                                                url: '{% url "admin_delete_student" %}',  // Replace with your URL
-                                                                data: {
-                                                                    studentId: studentId  // Pass studentId as post data
-                                                                },
-                                                                success: function (data) {
-                                                                    if (data.status === 'success') {
-                                                                        $('#deleteStudentModal' + studentId).modal('hide');
-                                                                        location.reload(true);
-                                                                        // Refresh the category list or perform any other actions
-                                                                    } else {
-                                                                        // Handle other status cases if needed
-                                                                        console.log(data.message);
-                                                                    }
-                                                                },
-                                                                error: function (error) {
-                                                                    console.log(error);
-                                                                    // Handle errors if necessary
-                                                                }
-                                                            });
-                                                        }
-                                                        
-                                                    </script>
-                                                </div>
-                                            </div>
-                                        
-                        
-                        
-                                      <div class="modal fade" id="editStudentModal{{ student.id }}" tabindex="-1" aria-labelledby="editStudentModalLabel{{ student.id }}" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="editStudentModalLabel">Edit Student</h5>
-                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form id="editStudentForm{{ student.id }}" method="post"  enctype="multipart/form-data">
-                                                        {% csrf_token %}
-                        
-                                                        <div class="row">
-                                                            <div class="col-md-4">
-                                                                <div class="form-group">
-                                                                    <label for="edit_registration_number">Registration Number</label>
-                                                                    <input type="text" class="form-control" id="edit_registration_number" name="registration_number" value="{{ student.registration_number }}">
-                                                                    <input type="hidden" class="form-control" id="student_id" name="student_id" value="{{ student.id }}">
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-4">
-                                                                <div class="form-group">
-                                                                    <label for="edit_full_name">Full Name</label>
-                                                                    <input type="text" class="form-control" id="edit_full_name" name="full_name" value="{{ student.full_name }}">
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-4">            
-                                                              <div class="form-group">
-                                                                  <label for="current_class">Class</label>
-                                                                  <select class="form-control select2bs4" style="width: 100%;" id="current_class" name="current_class">
-                                                                      <option value="Form One" {% if student.current_class == 'Form One' %} selected {% endif %}>Form One</option>
-                                                                      <option value="Form Two" {% if student.current_class == 'Form Two' %} selected {% endif %}>Form Two</option>
-                                                                      <option value="Form Three" {% if student.current_class == 'Form Three' %} selected {% endif %}>Form Three</option>
-                                                                      <option value="Form Four" {% if student.current_class == 'Form Four' %} selected {% endif %}>Form Four</option>
-                                                                  </select>
-                                                              </div>          
-                                                          </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-md-4">
-                                                                <div class="form-group">
-                                                                    <label for="edit_date_of_birth">Date of Birth</label>
-                                                                    <input type="date" class="form-control" id="edit_date_of_birth" name="date_of_birth" value="{{ student.date_of_birth|date:'Y-m-d' }}">
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-4">
-                                                                <div class="form-group">
-                                                                    <label for="edit_gender">Gender</label>
-                                                                    <select name="gender" id="edit_gender"  class="form-control select2bs4" style="width: 100%;" >
-                                                                        <option value="Male" {% if  student.gender == "Male" %}selected{% endif %}>Male</option>
-                                                                        <option value="Female" {% if student.gender == "Female" %}selected{% endif %}>Female</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-4">
-                                                                <div class="form-group">
-                                                                    <label for="edit_phone_number">Phone Number</label>
-                                                                    <input type="text" class="form-control" id="edit_phone_number" name="phone_number" value="{{ student.phone_number }}">
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-md-4">
-                                                                <div class="form-group">
-                                                                    <label for="edit_address">Address</label>
-                                                                    <textarea class="form-control" id="edit_address" name="address" cols="2">{{ student.address }}</textarea>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-4">
-                                                                <div class="form-group">
-                                                                    <label for="student_photo">Profile Picture</label>
-                                                                    <!-- Display current profile picture -->
-                                                                    {% if student.profile_pic %}
-                                                                    <img src="{{ student.profile_pic.url }}" alt="Profile Picture" class="img-thumbnail">
-                                                                    {% else %}
-                                                                    <p>No picture available</p>
-                                                                    {% endif %}
-                                                                    <input type="file" class="form-control" id="student_photo{{ student.id }}" name="student_photo" accept=".jpg, .jpeg, .png" data-max-size="5242880">
-                                                                    <small class="form-text text-danger">Accepted formats: JPG, JPEG, PNG | Maximum file size: 5MB</small>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="form-row">
-                                                            <div class="col-md-12 form-group">
-                                                                <button type="submit" class="btn btn-primary float-lg-right" id="submitBtn">Update Student</button>
-                                                            </div>
-                                                        </div>
-                                                    </form>
-                        
-                                                    <script>
-                                                        // Handle form submission using AJAX
-                                                        $(document).ready(function () {
-                                                            $('#editStudentForm{{ student.id }}').submit(function (e) {
-                                                                e.preventDefault();
-                                                                var formData = new FormData(this);
-                                                                $.ajax({
-                                                                    type: 'POST',
-                                                                    url: '{% url "admin_save_student" %}', // Replace with your URL
-                                                                    data: formData,
-                                                                    processData: false,
-                                                                    contentType: false,
-                                                                    success: function (data) {
-                                                                        if (data.status === 'success') {
-                                                                            $('#editStudentModal{{ student.id }}').modal('hide');
-                                                                            location.reload(true);
-                                                                            // Refresh the category list or perform any other actions
-                                                                        } else {
-                                                                            // Handle other status cases if needed
-                                                                            alert(data.message);
-                                                                        }
-                                                                    },
-                                                                    error: function (error) {
-                                                                        alert(error);
-                                                                        // Handle errors if necessary
-                                                                    }
-                                                                });
-                                                            });
-                                                        });
-                                                    </script>
-                                
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                        
-                          
-                          <!-- Modal -->
-                          <div class="modal fade" id="studentDetailsModal{{ student.id }}" tabindex="-1" role="dialog" aria-labelledby="studentDetailsModalLabel{{ student.id }}" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
-                              <div class="modal-content">
-                                <div class="modal-header bg-primary text-white">
-                                  <h5 class="modal-title" id="studentDetailsModalLabel{{ student.id }}">My Personal Info</h5>
-                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                  </button>
-                                </div>
-                                <div class="modal-body">
-                                  <!-- Students Personal Info -->
-                                  <div class="card mb-4">
-                                    <div class="card-body">
-                                      <h5 class="card-title">Full Name: <span style="color: blue;">{{ student.full_name }}</span></h5>
-                                      {% if student.address %}
-                                      <p class="card-text">Address: {{ student.address }}</p>
-                                      {% endif %}
-                                      {% if student.gender %}
-                                      <p class="card-text">Gender: {{ student.gender }}</p>
-                                      {% endif %}
-                                      {% if student.date_of_birth %}
-                                      <p class="card-text">Date of Birth: {{ student.date_of_birth }}</p>
-                                      {% endif %}
-                                      {% if student.phone_number %}
-                                      <p class="card-text">Contact Number: {{ student.phone_number }}</p>
-                                      {% endif %}
-                                      <!-- Add other personal information fields here -->
-                                    </div>
-                                  </div>
-                          
-                                  <!-- Students Academic Info -->
-                                  <div class="card mb-4">
-                                    <div class="card-body">
-                                      {% if student.current_class %}
-                                      <p class="card-text">Current Class: {{ student.current_class }}</p>
-                                      {% endif %}
-                                      {% if student.created_at %}
-                                      <p class="card-text">Admission Date: {{ student.created_at }}</p>
-                                      {% endif %}
-                                      {% if student.registration_number %}
-                                      <p class="card-text">Registration Number: {{ student.registration_number }}</p>
-                                      {% endif %}
-                                      <!-- Add other academic information fields here -->
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="modal-footer">
-                                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>                      
-                                </tr>              
-                                  
+                                        <a href="{% url 'headmaster_edit_student' student.id %}" class="btn btn-info btn-sm" data-toggle="tooltip" title="Edit">
+                                            <i class="fa fa-edit text-white"></i>
+                                        </a>
+                                        <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteStudentModal{{ student.id }}" data-toggle="tooltip" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <a href="{% url 'headmaster_student_details' student.id %}" class="btn btn-secondary btn-sm" data-toggle="tooltip" title="View Personal details">
+                                            <i class="fa fa-eye text-dark"></i>
+                                        </a>                                    
+                                        <a href="{% url 'headmaster_student_general_attendance' student.id %}" class="btn btn-info btn-sm" data-toggle="tooltip" title="View General attendance">
+                                            <i class="fa fa-eye text-dark"></i>
+                                        </a>
+                                        <a href="{% url 'headmaster_student_subject_wise_result_page' student.id %}" class="btn btn-success btn-sm" data-toggle="tooltip" title="View Result">
+                                            <i class="fa fa-file-alt text-white"></i>
+                                        </a>
+                                    </td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -362,127 +124,57 @@
     </div>
 </div>
 
-
-
-<!-- Modal -->
-<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addStudentModalLabel">Add Student</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form id="addStudentForm" method="post"  enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="row">
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="registration_number">Registration Number</label>
-                  <input type="text" class="form-control" id="registration_number" name="registration_number">
-                  <input type="hidden" class="form-control" id="student_id" name="student_id">
+{% for student in students %}
+     <!-- Delete Modal -->
+     <div class="modal fade" id="deleteStudentModal{{ student.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteStudentModalLabel{{ student.id }}" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteStudentModalLabel{{ student.id }}">Delete Student</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="full_name">Full Name</label>
-                  <input type="text" class="form-control" id="full_name" name="full_name">
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this student: <strong>{{ student.full_name }}</strong>?</p>
                 </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="current_class">Selected Class</label>
-                  <select class="form-control select2bs4" style="width: 100%;" id="current_class" name="current_class">
-                    <option value="Form One">Form One</option>
-                    <option value="Form Two">Form Two</option>
-                    <option value="Form Three">Form Three</option>
-                    <option value="Form Four">Form Four</option>
-                  </select>
-                </div>
-              </div>
-        </div>         
-            <div class="row">
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="date_of_birth">Date of Birth</label>
-                  <input type="date" class="form-control" id="date_of_birth" name="date_of_birth">
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="gender">Gender</label>
-                  <input type="text" class="form-control" id="gender" name="gender">
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="phone_number">Phone Number</label>
-                  <input type="text" class="form-control" id="phone_number" name="phone_number">
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-group">
-                    <label for="address">Address</label>
-                    <textarea class="form-control" id="address" name="address" cols="2"></textarea>
-                </div>
-            </div>           
-              <div class="col-md-4">
-                <div class="form-group">
-                    <label for="student_photos">Profile Picture</label>
-                    <input type="file" class="form-control" id="student_photos" name="student_photo" accept=".jpg, .jpeg, .png"  data-max-size="5242880">
-                    <small class="form-text text-danger">Accepted formats: JPG, JPEG, PNG | Maximum file size: 5MB</small>
-                </div>
-            </div>       
-            </div>
-               
-            <div class="form-row">
-                <div class="col-md-12 form-group">
-                    <button  type="button" class="btn btn-primary float-lg-right"  onclick="addStudent()">Add Student </button>  
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteStudent({{ student.id }})">Delete</button>
                 </div>
             </div>
-          </form>
+
+            <script>
+                function deleteStudent(studentId) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '{% url "headmaster_delete_student" %}',  // Replace with your URL
+                        data: {
+                            studentId: studentId  // Pass studentId as post data
+                        },
+                        success: function (data) {
+                            if (data.status === 'success') {
+                                $('#deleteStudentModal' + studentId).modal('hide');
+                                location.reload(true);
+                            } else {
+                                console.log(data.message);
+                            }
+                        },
+                        error: function (error) {
+                            console.log(error);
+                        }
+                    });
+                }
+            </script>
         </div>
-       
-      </div>
-    </div>
-  </div>
+    </div>            
+{% endfor %}
 
-
-  <script>
-   // Handle form submission using AJAX
-function addStudent() {
-    var formData = new FormData($('#addStudentForm')[0]);
-    $.ajax({
-        type: 'POST',
-        url: '{% url "admin_save_student" %}',  // Replace with your URL
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function (data) {
-            if (data.status === 'success') {
-                $('#addStudentModal').modal('hide');
-                location.reload(true);
-                // Refresh the inventory item list or perform any other actions
-            } else {
-                // Handle other status cases if needed
-                alert(data.message);
-            }
-        },
-        error: function (error) {
-            alert(error);
-            // Handle errors if necessary
-        }
-    });
-}
-
-</script>
 
 <script>
     function submitForm(checkbox) {
         checkbox.form.submit();
     }
 </script>
-{% include 'hod_template/datatable.html' %}
+{% include 'headmaster_template/datatable.html' %}
 {% endblock main_content %}

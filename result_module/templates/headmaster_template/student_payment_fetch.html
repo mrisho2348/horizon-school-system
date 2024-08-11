@@ -1,0 +1,125 @@
+{% extends 'headmaster_template/base_template.html' %}
+<title>{% block title %}
+    Payments
+    {% endblock title %}</title>
+{% load static %}
+
+{% block main_content %}
+<div class="container-fluid mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title text-center">Search Payments</h5>
+        </div>
+        <div class="card-body">
+            <form id="search-form">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="selected_class">Select Class</label>
+                            <select class="form-control select2bs4" style="width: 100%;" id="class_level" name="class_level" required>
+                                {% for class_level in class_levels %}
+                                    <option value="{{ class_level.id }}">{{ class_level.class_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="installment_id">Service:</label>
+                            <select class="form-control select2bs4" style="width: 100%;" id="services" name="services">                               
+                                    <option value="Madrasa">Madrasa</option>                              
+                                    <option value="Transport">Transport</option>                              
+                                    <option value="Registration">Registration</option>                              
+                                    <option value="Boarding">Boarding</option>                              
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="payment_status">Payment Status:</label>
+                            <select class="form-control select2bs4" style="width: 100%;" id="payment_status" name="payment_status">
+                                <option value="Completed">Completed</option>
+                                <option value="Incomplete">Incomplete</option>                               
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="submit" class="btn btn-primary btn-block">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title text-center">Payments</h5>
+                </div>
+                <div class="card-body">
+                    <div id="payment-table-container">
+                        <!-- Payment results will be displayed here -->
+                        <div class="table-responsive">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  $(document).ready(function() {
+    // Add event listener to the form submission
+    $('#search-form').submit(function(event) {
+      // Prevent default form submission
+      event.preventDefault();
+      
+      // Serialize form data
+      var formData = $(this).serialize();
+      
+      // Send AJAX request to the server
+      $.ajax({
+        type: 'POST',
+        url: '{% url 'headmaster_payment_fetch' %}',
+        data: formData,
+        success: function(response) {
+          // Update the table content with the fetched data
+          console.log(response)
+          $('#payment-table-container').html(response.html_result);
+        },
+        error: function(xhr, status, error) {
+          // Handle errors
+          console.error(xhr.responseText);
+        }
+      });
+    });
+  });
+</script>   
+
+<script>
+    // Function to update the page title
+    function updatePageTitle() {
+        var selectedClass = document.getElementById('selected_class').value;
+        var services = document.getElementById('services');       
+        var paymentStatus = document.getElementById('payment_status').value;
+
+        var newTitle = selectedClass + ' - ' + services + ' - ' + paymentStatus;
+        document.title = newTitle;
+    }
+
+    // Event listener to trigger the updatePageTitle function when the form is submitted
+    document.getElementById('search-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent form submission
+        updatePageTitle(); // Update page title
+    });
+
+    // Initial page title update when the page loads
+    updatePageTitle();
+</script>
+{% endblock main_content %}

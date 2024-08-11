@@ -1,4 +1,4 @@
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 {% block page_title %}
 HOME
 {% endblock page_title %}
@@ -6,120 +6,140 @@ HOME
 {% load static %}
 <section class="content">
     <div class="container-fluid">
-      <div class="row">       
-        <!-- ./col -->
-        <div class="col-lg-4 col-6">
-            <!-- small box -->
-            <div class="small-box bg-success">
-                <div class="inner">
-                    <h3>{{ total_fees_collected }}</h3>
-                    <p>TOTAL FEES COLLECTED</p>
+        <div class="row">
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>{{ total_fees_collected }}</h3>
+                        <p>TOTAL FEES COLLECTED</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <a href="{% url 'headmaster_fees_collected' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                 </div>
-                <div class="icon">
-                    <i class="fas fa-dollar-sign"></i>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>{{ pending_payments_count }}</h3>
+                        <p>PENDING PAYMENTS</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <a href="{% url 'headmaster_pending_payments' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                 </div>
-                <a href="{% url 'admin_fees_collected' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>{{ total_expenditure }}</h3>
+                        <p>TOTAL EXPENDITURE</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <a href="{% url 'headmaster_expenditure' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- ./col -->
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{ total_students }}</h3>
+                        <p>TOTAL STUDENTS IN OUR SCHOOL</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <a href="{% url 'headmaster_manage_student' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>{{ total_subjects }}</h3>
+                        <p>TOTAL SUBJECTS</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <a href="{% url 'headmaster_manage_subject' %}" class="small-box-footer">&nbsp<i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{ net_profit }}</h3>
+                        <p>Net Profit</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
             </div>
         </div>
-        <!-- ./col -->
-        <div class="col-lg-4 col-6">
-            <!-- small box -->
-            <div class="small-box bg-warning">
-                <div class="inner">
-                    <h3>{{ pending_payments_count }}</h3>
-                    <p>PENDING PAYMENTS</p>
+        
+        <div class="row">
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3>{{ total_school_fees }}</h3>
+                        <p>Total School Fees Collected</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-school"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                 </div>
-                <div class="icon">
-                    <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-secondary">
+                    <div class="inner">
+                        <h3>{{ total_madrasatul_fees }}</h3>
+                        <p>Total Madrasatul Fees Collected</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                 </div>
-                <a href="{% url 'admin_pending_payments' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            </div>
+            <!-- ./col -->
+            <div class="col-lg-4 col-6">
+                <!-- small box -->
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{ total_transport_fees }}</h3>
+                        <p>Total Transport Fees Collected</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-bus"></i>
+                    </div>
+                    <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
             </div>
         </div>
-        <!-- ./col -->
-        <div class="col-lg-4 col-6">
-            <!-- small box -->
-            <div class="small-box bg-danger">
-                <div class="inner">
-                    <h3>{{ total_expenditure }}</h3>
-                    <p>TOTAL EXPENDITURE</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <a href="{% url 'admin_expenditure' %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <!-- ./col -->
-    </div>
-      <div class="row">
-        <div class="col-lg-4 col-6">
-          <!-- small box -->
-          <div class="small-box bg-info">
-            <div class="inner">
-              <h3>{{ total_students }}</h3>
-              <p>TOTAL REGISTERED IN OUR SCHOOL</p>
-            </div>
-            <div class="icon">
-              <i class="fas fa-users"></i>
-            </div>
-            <a href="{% url 'admin_manage_student' %}#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-          </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-4 col-6">
-          <!-- small box -->
-          <div class="small-box bg-danger">
-            <div class="inner">
-              <h3>{{ total_subjects }}</h3>
-              <p>TOTAL SUBJECTS</p>
-            </div>
-            <div class="icon">
-              <i class="fas fa-book-open"></i>
-            </div>
-            <a href="{% url 'admin_manage_subject' %}" class="small-box-footer">&nbsp<i class="fas fa-arrow-circle-right"></i></a>
-          </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-4 col-6">
-          <!-- small box -->
-          <div class="small-box bg-info">
-              <div class="inner">
-                  <h3>{{ net_profit }}</h3>
-                  <p>Net Profit</p>
-              </div>
-              <div class="icon">
-                  <i class="fas fa-chart-line"></i>
-              </div>
-              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-          </div>
-      </div>
-      </div>  
-      <div class="row">
-        <div class="col-lg-4 col-6">       
-            <div class="small-box bg-info">
-                <div class="inner">
-                    <h3>{{ total_amount }}</h3>
-                    <p>Total Amount from Registration Payments</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-money-bill-wave"></i>
-                </div>
-                <a href="{% url "admin_student_payment_list" %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-        <div class="col-lg-4 col-6">       
-            <div class="small-box bg-primary">
-                <div class="inner">
-                    <h3>{{ total_students }}</h3>
-                    <p>Total Students Paid Registration Fee</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-user-graduate"></i>
-                </div>
-                <a href="{% url "admin_student_payment_list" %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>        
-    </div>
+        
       <div class="row">
         <div class="col-lg-6">
           <div class="card card-primary">
@@ -139,7 +159,7 @@ HOME
         <div class="col-lg-6">
           <div class="card card-primary">
             <div class="card-header">
-              <h3 class="card-title">TOTALSTUDENTS CLASS WISE</h3>
+              <h3 class="card-title">TOTAL STUDENTS CLASS WISE</h3>
               <div class="card-tools">
                 <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
                 <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
@@ -218,7 +238,7 @@ HOME
         document.addEventListener('DOMContentLoaded', function () {
             function updateFinancialContent(selectedYear) {
                 $.ajax({
-                    url: '{% url "admin_get_financial_yearly_data" %}',
+                    url: '{% url "headmaster_get_financial_yearly_data" %}',
                     method: 'GET',
                     data: { 'year': selectedYear },
                     success: function (data) {
@@ -272,28 +292,78 @@ HOME
     </script>  
       
     </div>
+
     <div class="row">
-      <div class="col-lg-6">
-          <!-- PIE CHART -->
-          <div class="card card-danger">
+        <div class="col-lg-6">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Reg And Boarding Fee Payment Income</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="feePaymentChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      
+        <div class="col-lg-6">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Madrasatul Fee Payment Income</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="madrasatulFeePaymentChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Transport Fee Payment Income</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="transportFeePaymentChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card card-primary">
               <div class="card-header">
-                  <h3 class="card-title">Class-wise Fee Payments</h3>
-                  <div class="card-tools">
-                      <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                          <i class="fas fa-minus"></i>
-                      </button>
-                      <button type="button" class="btn btn-tool" data-card-widget="remove">
-                          <i class="fas fa-times"></i>
-                      </button>
-                  </div>
+                <h3 class="card-title">TOTAL SUBJECTS CLASS WISE</h3>
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+                </div>
               </div>
               <div class="card-body">
-                  <canvas id="classwiseFeePaymentsChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                <canvas id="subjectCountChart"></canvas>
               </div>
               <!-- /.card-body -->
+            </div>
           </div>
-          <!-- /.card -->
       </div>
+      
+    <div class="row">   
       <div class="col-lg-6">
           <!-- BAR CHART -->
           <div class="card card-success">
@@ -325,88 +395,109 @@ HOME
 {% block customer_js %}
 
 <script>
-  var numberOfStudentChart;
+    $(document).ready(function() {
+        function fetchSubjectCountData() {
+            $.ajax({
+                url: '{% url "headmaster_get_subject_count_per_class_level" %}',
+                method: 'GET',
+                success: function(data) {
+                    createSubjectCountChart(data);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching data:', error);
+                }
+            });
+        }
 
-  function fetchClasswiseStudentData(year) {
-      $.ajax({
-          url: '{% url "admin_get_students_by_class" %}',
-          method: 'GET',
-          data: { 'year': year }, 
-          success: function(data) {
-              createClasswiseStudentChart(data);
-          },
-          error: function(xhr, status, error) {
-              console.error('Error fetching data:', error);
-              // Optionally handle error display or retry mechanism
-          }
-      });
-  }
+        function createSubjectCountChart(data) {
+            var ctx = $('#subjectCountChart')[0].getContext('2d');
 
-  function createClasswiseStudentChart(data) {
-      var ctx = document.getElementById('numberOfStudent').getContext('2d');
+            var labels = data.map(entry => entry['class_level__class_name']);
+            var counts = data.map(entry => entry.subject_count);
 
-      // If the chart instance exists, destroy it to create a new one
-      if (numberOfStudentChart) {
-          numberOfStudentChart.destroy();
-      }
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Subjects per Class Level',
+                        data: counts,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            enabled: true
+                        }
+                    }
+                }
+            });
+        }
 
-      // Create new chart instance
-      numberOfStudentChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-              labels: data.labels,
-              datasets: [{
-                  label: 'Number of Students',
-                  data: data.data,
-                  backgroundColor: 'rgba(60,141,188,0.9)',
-                  borderColor: 'rgba(60,141,188,0.8)',
-                  borderWidth: 1
-              }]
-          },
-          options: {
-              scales: {
-                  y: {
-                      beginAtZero: true,
-                      title: {
-                          display: true,
-                          text: 'Number of Students'
-                      }
-                  },
-                  x: {
-                      title: {
-                          display: true,
-                          text: 'Class Name'
-                      }
-                  }
-              },
-              plugins: {
-                  tooltip: {
-                      enabled: true,
-                      mode: 'index',
-                      intersect: false,
-                  },
-                  legend: {
-                      display: false,
-                  }
-              },
-              responsive: true,
-              maintainAspectRatio: false
-          }
-      });
-  }
-
-  // Example usage: Fetch data and create chart on page load
-  $(document).ready(function() {
-      var selectedYear = $('#yearSelect').val();  // Assuming you have a select element for year
-      fetchClasswiseStudentData(selectedYear);
-
-      // Event listener to fetch data and update the chart when the year is changed
-      $('#yearSelect').on('change', function() {
-          var selectedYear = $(this).val();
-          fetchClasswiseStudentData(selectedYear);
-      });
-  });
+        fetchSubjectCountData();
+    });
 </script>
+
+<script>
+    $(document).ready(function() {
+        // Function to fetch data and render the chart
+        function fetchAndRenderChart() {
+            $.ajax({
+                url: '{% url "headmaster_fetch_students_per_class" %}', // URL to fetch data from
+                method: 'GET',
+                success: function(response) {
+                    // Data received from the server
+                    var labels = response.labels;
+                    var data = response.data;
+    
+                    // Chart.js configuration
+                    var ctx = document.getElementById('numberOfStudent').getContext('2d');
+                    var numberOfStudentChart = new Chart(ctx, {
+                        type: 'bar', // Bar chart type
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Total Students',
+                                data: data,
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true // Start y-axis from zero
+                                }
+                            }
+                        }
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to fetch student data:', xhr.responseText);
+                }
+            });
+        }
+    
+        // Call the function to fetch data and render the chart
+        fetchAndRenderChart();
+    });
+    </script>
 
 
 <script>
@@ -414,7 +505,7 @@ HOME
 
   function fetchClasswiseFeePaymentData(year) {
       $.ajax({
-          url: '{% url "admin_get_classwise_fee_payment_data" %}',
+          url: '{% url "headmaster_get_classwise_fee_payment_data" %}',
           method: 'GET',
           data: { 'year': year },  // Optionally send year as a parameter
           success: function(data) {
@@ -491,13 +582,234 @@ HOME
   });
 </script>
 
+<script>
+    
+  var madrasatulFeePaymentChart;
+
+  function fetchMadrasatulFeePaymentMonthlyData(year) {
+      $.ajax({
+          url: '{% url "headmaster_get_madrasatul_fee_payment_monthly_data" %}',
+          method: 'GET',
+          data: { 'year': year },
+          success: function(data) {
+              createMadrasatulFeePaymentChart(data);
+          },
+          error: function(xhr, status, error) {
+              console.error('Error fetching data:', error);
+          }
+      });
+  }
+  
+  function createMadrasatulFeePaymentChart(data) {
+      var ctx = document.getElementById('madrasatulFeePaymentChart').getContext('2d');
+  
+      if (madrasatulFeePaymentChart) {
+          madrasatulFeePaymentChart.data.labels = data.map(entry => entry.month);
+          madrasatulFeePaymentChart.data.datasets[0].data = data.map(entry => entry.income);
+          madrasatulFeePaymentChart.update();
+      } else {
+          madrasatulFeePaymentChart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: data.map(entry => entry.month),
+                  datasets: [{
+                      label: 'Madrasatul Fee Payment Income',
+                      data: data.map(entry => entry.income),
+                      borderColor: 'rgba(255, 206, 86, 1)',
+                      borderWidth: 2,
+                      fill: false
+                  }]
+              },
+              options: {
+                  scales: {
+                      y: {
+                          beginAtZero: true
+                      }
+                  },
+                  plugins: {
+                      tooltip: {
+                          enabled: true,
+                          mode: 'index',
+                          intersect: false,
+                      },
+                      legend: {
+                          display: true,
+                          position: 'bottom'
+                      }
+                  },
+                  hover: {
+                      mode: 'index',
+                      intersect: false
+                  }
+              }
+          });
+      }
+  }
+  
+  var selectedYearMadrasatulFeePayment = $('#yearSelect').val();
+  fetchMadrasatulFeePaymentMonthlyData(selectedYearMadrasatulFeePayment);
+  
+  $('#yearSelect').on('change', function() {
+      var selectedYear = $(this).val();
+      fetchMadrasatulFeePaymentMonthlyData(selectedYear);
+  });
+  
+</script>
+
+<script>
+    
+var transportFeePaymentChart;
+
+function fetchTransportFeePaymentMonthlyData(year) {
+    $.ajax({
+        url: '{% url "headmaster_get_transport_fee_payment_monthly_data" %}',
+        method: 'GET',
+        data: { 'year': year },
+        success: function(data) {
+            createTransportFeePaymentChart(data);
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching data:', error);
+        }
+    });
+}
+
+function createTransportFeePaymentChart(data) {
+    var ctx = document.getElementById('transportFeePaymentChart').getContext('2d');
+
+    if (transportFeePaymentChart) {
+        transportFeePaymentChart.data.labels = data.map(entry => entry.month);
+        transportFeePaymentChart.data.datasets[0].data = data.map(entry => entry.income);
+        transportFeePaymentChart.update();
+    } else {
+        transportFeePaymentChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(entry => entry.month),
+                datasets: [{
+                    label: 'Transport Fee Payment Income',
+                    data: data.map(entry => entry.income),
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        enabled: true,
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                },
+                hover: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        });
+    }
+}
+
+var selectedYearTransportFeePayment = $('#yearSelect').val();
+fetchTransportFeePaymentMonthlyData(selectedYearTransportFeePayment);
+
+$('#yearSelect').on('change', function() {
+    var selectedYear = $(this).val();
+    fetchTransportFeePaymentMonthlyData(selectedYear);
+});
+
+</script>
+
+<script>
+    
+
+  var feePaymentChart;
+
+  function fetchFeePaymentMonthlyData(year) {
+      $.ajax({
+          url: '{% url "headmaster_get_fee_payment_monthly_data" %}',
+          method: 'GET',
+          data: { 'year': year },
+          success: function(data) {
+              createFeePaymentChart(data);
+          },
+          error: function(xhr, status, error) {
+              console.error('Error fetching data:', error);
+          }
+      });
+  }
+  
+  function createFeePaymentChart(data) {
+      var ctx = document.getElementById('feePaymentChart').getContext('2d');
+  
+      if (feePaymentChart) {
+          feePaymentChart.data.labels = data.map(entry => entry.month);
+          feePaymentChart.data.datasets[0].data = data.map(entry => entry.income);
+          feePaymentChart.update();
+      } else {
+          feePaymentChart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: data.map(entry => entry.month),
+                  datasets: [{
+                      label: 'Fee Payment Income',
+                      data: data.map(entry => entry.income),
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      borderWidth: 2,
+                      fill: false
+                  }]
+              },
+              options: {
+                  scales: {
+                      y: {
+                          beginAtZero: true
+                      }
+                  },
+                  plugins: {
+                      tooltip: {
+                          enabled: true,
+                          mode: 'index',
+                          intersect: false,
+                      },
+                      legend: {
+                          display: true,
+                          position: 'bottom'
+                      }
+                  },
+                  hover: {
+                      mode: 'index',
+                      intersect: false
+                  }
+              }
+          });
+      }
+  }
+  
+  var selectedYearFeePayment = $('#yearSelect').val();
+  fetchFeePaymentMonthlyData(selectedYearFeePayment);
+  
+  $('#yearSelect').on('change', function() {
+      var selectedYear = $(this).val();
+      fetchFeePaymentMonthlyData(selectedYear);
+  });
+</script>
 
 <script>
   var schoolFeesChart;
 
   function fetchSchoolFeesMonthlyData(year) {
       $.ajax({
-          url: '{% url "admin_get_school_fees_monthly_data" %}',
+          url: '{% url "headmaster_get_school_fees_monthly_data" %}',
           method: 'GET',
           data: { 'year': year },
           success: function(data) {
@@ -563,6 +875,10 @@ HOME
       fetchSchoolFeesMonthlyData(selectedYear);
   });
 
+  
+
+
+
 </script>
 
 <script>
@@ -570,7 +886,7 @@ var expenditureChart;
 
 function fetchExpenditureMonthlyData(year) {
     $.ajax({
-        url: '{% url "admin_get_expenditure_monthly_data" %}',
+        url: '{% url "headmaster_get_expenditure_monthly_data" %}',
         method: 'GET',
         data: { 'year': year },
         success: function(data) {

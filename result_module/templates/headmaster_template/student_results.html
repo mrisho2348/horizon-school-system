@@ -1,4 +1,4 @@
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 <title>{% block title %}
     Results
     {% endblock title %}</title>
@@ -17,11 +17,10 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="selected_class">Select Class</label>
-                            <select class="form-control select2bs4" style="width: 100%;" id="selected_class" name="selected_class">
-                                <option value="Form One">Form One</option>
-                                <option value="Form Two">Form Two</option>
-                                <option value="Form Three">Form Three</option>
-                                <option value="Form Four">Form Four</option>
+                            <select class="form-control select2bs4" style="width: 100%;" id="class_level" name="class_level" required>
+                                {% for class_level in class_levels %}
+                                    <option value="{{ class_level.id }}">{{ class_level.class_name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -88,7 +87,7 @@
       // Send AJAX request to the server
       $.ajax({
         type: 'POST',
-        url: '{% url 'admin_student_results' %}',
+        url: '{% url 'headmaster_student_results' %}',
         data: formData,
         success: function(response) {
           // Update the table content with the fetched data

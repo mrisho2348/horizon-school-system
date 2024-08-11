@@ -6,6 +6,9 @@ School Fees Installments
 
 {% block breadcrumb %}
 {% include "hod_template/modal_form.html" %}
+<a class="btn btn-primary float-right mr-2" type="button" href="{% url "admin_installment_create" %}">
+    <i class="fas fa-plus"></i> New Installment
+</a>
 {% endblock breadcrumb %}
 
 {% block main_content %}
@@ -27,6 +30,7 @@ School Fees Installments
                                     <th>Start Date</th>
                                     <th>End Date</th>
                                     <th>Class</th>                            
+                                    <th>Action</th>                            
                                 </tr>
                             </thead>
                             <tbody>
@@ -37,9 +41,40 @@ School Fees Installments
                                     <td>{{ installment.amount_required }}</td>
                                     <td>{{ installment.start_date }}</td>
                                     <td>{{ installment.end_date }}</td>
-                                    <td>{{ installment.school_class }}</td>
-                                   
+                                    <td>{{ installment.class_level.class_name }}</td>
+                                    <td>
+                                        <a href="{% url 'admin_installment_edit' installment.pk %}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal{{ installment.pk }}">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button>
+                                    </td>
                                 </tr>
+                                <!-- Bootstrap Modal for Deleting Class Level -->
+                                <div class="modal fade" id="deleteModal{{ installment.pk }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ installment.pk }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel{{ installment.pk }}">Delete Installment</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to delete the Installment <strong>{{ installment.installment_name }}-{{ installment.class_level.class_name }}</strong>?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                <form method="post" action="{% url 'admin_installment_delete' installment.pk %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {% endfor %}
                             </tbody>
                         </table>

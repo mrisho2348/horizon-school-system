@@ -1,10 +1,10 @@
  
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 {% block title %}
       Student Feedback    
 {% endblock title %}
 {% block breadcrumb %}
-{% include "hod_template/modal_form.html" %}
+{% include "headmaster_template/modal_form.html" %}
        
 {% endblock breadcrumb %}
 {% block main_content %}
@@ -117,7 +117,7 @@
           var  message=$("#reply_message").val()
   
           $.ajax({
-                  url:'{% url 'admin_student_feedback_message_replied' %}',
+                  url:'{% url 'headmaster_student_feedback_message_replied' %}',
                   type:'POST',
                   data:{
                     id:id,
@@ -147,5 +147,5 @@
 
     </script>
 
-    {% include 'hod_template/datatable.html' %}
+    {% include 'headmaster_template/datatable.html' %}
   {% endblock customer_js %}

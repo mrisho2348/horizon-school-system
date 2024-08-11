@@ -55,11 +55,11 @@
                             <!-- Additional Information Section -->
                             <div class="row">
                                 <div class="col-md-4 mb-3">
-                                    <label for="{{ form.current_class.id_for_label }}">{{ form.current_class.label }}</label>
-                                    {{ form.current_class }}
-                                    {% if form.current_class.errors %}
+                                    <label for="{{ form.class_level.id_for_label }}">{{ form.class_level.label }}</label>
+                                    {{ form.class_level }}
+                                    {% if form.class_level.errors %}
                                         <div class="invalid-feedback d-block">
-                                            {{ form.current_class.errors }}
+                                            {{ form.class_level.errors }}
                                         </div>
                                     {% endif %}
                                 </div>

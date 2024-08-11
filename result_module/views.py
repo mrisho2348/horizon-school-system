@@ -142,30 +142,45 @@ def DoLogin(request):
     if request.method != "POST":
         return HttpResponse("<h2>Method Not allowed</h2>")
     else:
+        # Authenticate user using EmailBackend
         user = EmailBackend.authenticate(request, request.POST.get("email"), request.POST.get("password"))
+        
         if user is not None:
             if not user.is_active:
                 messages.error(request, "Your account is not active. Please contact the administrator for support.")
                 return HttpResponseRedirect(reverse("login"))
 
             login(request, user)
-            if user.user_type == "1":
+
+            # Redirect based on user type
+            if user.user_type == "1":  # Admin user
                 return HttpResponseRedirect(reverse("admin_home"))
-            elif user.user_type == "2":
+
+            elif user.user_type == "2":  # Staff user
                 # Retrieve the staff role
-                staff = Staffs.objects.get(admin=user)
-                if staff.staff_role == "Accountant":
-                    return HttpResponseRedirect(reverse("accountant_home"))
-                elif staff.staff_role == "Staff":
-                    return HttpResponseRedirect(reverse("staff_home"))
-                elif staff.staff_role == "Admin":
-                    return HttpResponseRedirect(reverse("admin_home"))
-                else:
+                try:
+                    staff = Staffs.objects.get(admin=user)
+                    # Redirect based on staff role
+                    if staff.staff_role == "Accountant":
+                        return HttpResponseRedirect(reverse("accountant_home"))
+                    elif staff.staff_role == "Admin":
+                        return HttpResponseRedirect(reverse("admin_home"))
+                    elif staff.staff_role == "Academic":
+                        return HttpResponseRedirect(reverse("academic_home"))
+                    elif staff.staff_role == "Headmaster":
+                        return HttpResponseRedirect(reverse("headmaster_home"))
+                    elif staff.staff_role == "Class Teacher":
+                        return HttpResponseRedirect(reverse("class_teacher_home"))
+                    else:
+                        messages.error(request, "Your role is not recognized. Please contact the administrator.")
+                        return HttpResponseRedirect(reverse("login"))
+                except Staffs.DoesNotExist:
+                    messages.error(request, "Staff profile not found. Please contact the administrator.")
                     return HttpResponseRedirect(reverse("login"))
             else:
                 return HttpResponseRedirect(reverse("login"))
         else:
-            messages.error(request, "Invalid email or password")
+            messages.error(request, "wrong email or password")
             return HttpResponseRedirect(reverse("login"))
     
 

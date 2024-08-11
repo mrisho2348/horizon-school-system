@@ -1,5 +1,5 @@
  
-{% extends 'staff_template/base_template.html' %}
+{% extends 'academic_template/base_template.html' %}
 {% block title %}
          exam type 
 {% endblock title %}
@@ -7,11 +7,11 @@
 {% load static %}
 <section class="content">
     <div class="container-fluid">
-        <div class="container mt-5">
+        <div class="container-fluid mt-5">
             <div class="row">
               {% for exam_type in exam_types %}
               <div class="col-md-4 mb-4">
-                <a href="{% url 'staff_exam_type_to_view_class' exam_type.id %}" class="card-link">
+                <a href="{% url 'academic_exam_type_to_view_class' exam_type.id %}" class="card-link">
                   <div class="card">
                     <div class="card-body">
                       <h5 class="card-title">{{ exam_type.name }}</h5>

@@ -11,64 +11,7 @@ STUDENTS DASHBOARD
 {% load static %}
 <section class="content">
     <div class="container-fluid">
-      <div class="row">
-        <div class="col-lg-3 col-6">
-          <!-- small box -->
-          <div class="small-box bg-info">
-            <div class="inner">
-              <h3>{{ attendance_total }}</h3>
-              <p>Total Subject Attendance</p>
-            </div>
-            <div class="icon">
-              <i class="fas fa-users"></i> <!-- Correct icon for Total Attendance -->
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-          </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-6">
-          <!-- small box -->
-          <div class="small-box bg-success">
-            <div class="inner">
-              <h3>{{ attendance_absent }}</h3>
-              <p>Subject Absent Attendance</p>
-            </div>
-            <div class="icon">
-              <i class="fas fa-user-times"></i> <!-- Correct icon for Absent -->
-            </div>
-            <a href="{% url "student_view_subject_attendance" %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-          </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-6">
-          <!-- small box -->
-          <div class="small-box bg-warning">
-            <div class="inner">
-              <h3>{{ total_subjects_taken }}</h3>
-              <p>Subject</p>
-            </div>
-            <div class="icon">
-              <i class="fas fa-book"></i> <!-- Correct icon for Subject -->
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-          </div>
-        </div>
-        <!-- ./col -->
-        <div class="col-lg-3 col-6">
-          <!-- small box -->
-          <div class="small-box bg-danger">
-            <div class="inner">
-              <h3>{{ attendance_present }}</h3>
-              <p>Subject Present Attendance</p>
-            </div>
-            <div class="icon">
-              <i class="fas fa-user-check"></i> <!-- Correct icon for Present -->
-            </div>
-            <a href="{% url "student_view_subject_attendance" %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-          </div>
-        </div>
-        <!-- ./col -->
-      </div>
+      
       <div class="row">      
         <!-- ./col -->
         <div class="col-lg-3 col-6">
@@ -81,7 +24,7 @@ STUDENTS DASHBOARD
             <div class="icon">
               <i class="fas fa-user-times"></i> <!-- Correct icon for Absent -->
             </div>
-            <a href="{% url "student_view_class_attendance" %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="{% url "academic_view_class_attendance" %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
           </div>
         </div>
         <!-- ./col -->
@@ -95,7 +38,7 @@ STUDENTS DASHBOARD
             <div class="icon">
               <i class="fas fa-book"></i> <!-- Correct icon for Subject -->
             </div>
-            <a href="{% url "student_view_class_attendance" %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="{% url "academic_view_class_attendance" %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
           </div>
         </div>
         <!-- ./col -->
@@ -109,7 +52,7 @@ STUDENTS DASHBOARD
             <div class="icon">
               <i class="fas fa-user-check"></i> <!-- Correct icon for Present -->
             </div>
-            <a href="{% url "student_view_class_attendance" %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="{% url "academic_view_class_attendance" %}" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
           </div>
         </div>
         <!-- ./col -->

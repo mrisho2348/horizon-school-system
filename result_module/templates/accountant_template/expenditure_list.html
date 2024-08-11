@@ -1,0 +1,87 @@
+{% extends 'accountant_template/base_template.html' %}
+
+{% block title %}
+   All Expenditure
+{% endblock title %}
+
+{% block breadcrumb %}
+{% include "accountant_template/modal_form.html" %}
+<a class="btn btn-primary float-right mr-2" type="button" href="{% url "accountant_add_expenditure" %}">
+    <i class="fas fa-plus"></i> New Expenditure
+</a>
+{% endblock breadcrumb %}
+
+{% load static %}
+{% block main_content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="header-title text-center mt-0 mb-1 text-uppercase">List of Expenditure</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-nowrap table-responsive-sm table-bordered table-striped table-sm display" id="example" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for expenditure in expenditures %}
+                                <tr>
+                                    <td>{{ expenditure.id }}</td>
+                                    <td>{{ expenditure.description }}</td>
+                                    <td>{{ expenditure.amount }}</td>
+                                    <td>{{ expenditure.date }}</td>
+                                    <td>{{ expenditure.category }}</td>
+                                    <td>
+                                        <a href="{% url 'accountant_edit_expenditure' expenditure.pk %}" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        {% comment %} <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal{{ expenditure.pk }}">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button> {% endcomment %}
+                                    </td>
+                                </tr>
+                                <!-- Bootstrap Modal for Deleting Fee Structure -->
+                                <div class="modal fade" id="deleteModal{{ expenditure.pk }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ expenditure.pk }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel{{ expenditure.pk }}">Delete Expenditure</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to delete the Expenditure for <strong>{{ expenditure.category }}</strong> with amount <strong>{{ expenditure.amount }}</strong>?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                <form method="post" action="{% url 'accountant_delete_expenditure' expenditure.pk %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'accountant_template/datatable.html' %}
+{% endblock main_content %}

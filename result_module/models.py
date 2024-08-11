@@ -95,16 +95,17 @@ BRANCH_CHOICES = [
 ]
 
 GENDER_CHOICES = [
-    ('male', 'Male'),
-    ('female', 'Female')
+    ('Male', 'Male'),
+    ('Female', 'Female')
 ]
 
-SERVICE_CHOICES = [
-    ('school', 'School'),
-    ('madrasa', 'Madrasa'),
-    ('transport', 'Transport'),
-    ('boarding', 'Boarding')
-]
+class Service(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
 
 class Students(models.Model):
     id = models.AutoField(primary_key=True)
@@ -115,7 +116,7 @@ class Students(models.Model):
     middle_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)    
     physical_disabilities_condition = models.CharField(max_length=100, null=True, blank=True)
-    current_class = models.CharField(max_length=20, choices=CLASS_CHOICES, blank=True)
+    class_level = models.ForeignKey('ClassLevel', on_delete=models.CASCADE, related_name='students', blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
     first_phone_number = models.CharField(max_length=10)
@@ -123,12 +124,17 @@ class Students(models.Model):
     fee_payer_number = models.CharField(max_length=10, null=True, blank=True)
     address = models.CharField(max_length=100, null=True, blank=True)
     branch = models.CharField(max_length=20, choices=BRANCH_CHOICES, blank=True)
-    service = models.CharField(max_length=100, choices=SERVICE_CHOICES, blank=True)
+    services = models.ManyToManyField(Service, blank=True)
     profile_pic = models.FileField(upload_to='student_profile_pic', null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['first_name', 'middle_name','last_name'], name='unique_student')
+        ]
 
     def save(self, *args, **kwargs):
         if not self.registration_number:
@@ -213,30 +219,48 @@ class SujbectWiseResults(models.Model):
     book_keeping_score = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, default=0) 
     date_of_exam = models.DateField(auto_now=True) 
     exam_type = models.ForeignKey(ExamType, on_delete=models.CASCADE)
-    selected_class = models.CharField(max_length=255, null=True, blank=True)   
+    class_level = models.CharField(max_length=255, null=True, blank=True)   
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
     
+class ClassLevel(models.Model):
+    id = models.AutoField(primary_key=True)
+    class_name = models.CharField(max_length=100, unique=True) 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    objects = models.Manager()
+
+    def __str__(self):
+        return self.class_name
     
 class Subject(models.Model):
-    id = models.AutoField(primary_key=True)    
+    id = models.AutoField(primary_key=True)
     subject_name = models.CharField(max_length=255, null=True, blank=True)
+    class_level = models.ForeignKey(ClassLevel, on_delete=models.CASCADE, related_name='subjects')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['subject_name', 'class_level'], name='unique_subject_per_class_level')
+        ]
     def __str__(self):
         return f"{self.subject_name}"
   
   
 class ClassAttendance(models.Model):
     id = models.AutoField(primary_key=True)  
-    current_class = models.CharField(max_length=15)  # Ex   
+    class_level = models.ForeignKey(ClassLevel, on_delete=models.CASCADE, related_name='attendances')  # Link to ClassLevel
     attendance_date = models.DateField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)   
     updated_at = models.DateTimeField(auto_now=True)  
     objects = models.Manager()
+
+    def __str__(self):
+        return f"Attendance for {self.class_level.class_name} on {self.attendance_date}"
         
 class StudentClassAttendance(models.Model):
     id = models.AutoField(primary_key=True)  
@@ -274,7 +298,7 @@ class Result(models.Model):
     exam_type = models.ForeignKey(ExamType, on_delete=models.CASCADE)
     marks = models.DecimalField(max_digits=5, decimal_places=2)
     date_of_exam = models.DateField()
-    selected_class = models.CharField(max_length=255, null=True, blank=True)
+    class_level = models.ForeignKey(ClassLevel, on_delete=models.CASCADE, related_name='student') 
     total_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -312,7 +336,7 @@ class StudentExamInfo(models.Model):   # ... (other fields)
     student = models.ForeignKey(Students, on_delete=models.CASCADE)
     exam_type = models.ForeignKey(ExamType, on_delete=models.CASCADE)
     division = models.CharField(max_length=50, null=True, blank=True)
-    selected_class = models.CharField(max_length=255, null=True, blank=True) 
+    class_level = models.ForeignKey(ClassLevel, on_delete=models.CASCADE, related_name='studentexaminfo') 
     total_grade_points = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=0)
     best_subjects = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -327,7 +351,7 @@ class StudentPositionInfo(models.Model):
     student = models.ForeignKey(Students, on_delete=models.CASCADE)
     exam_type = models.ForeignKey(ExamType, on_delete=models.CASCADE)
     position = models.IntegerField(null=True, blank=True)
-    current_class = models.CharField(max_length=100,default="Form I")
+    class_level = models.ForeignKey(ClassLevel, on_delete=models.CASCADE, related_name='studentepositioninfo') 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
@@ -355,13 +379,13 @@ def update_student_exam_info(sender, instance, **kwargs):
 
     # Check if there are at least seven subjects with results for the student
     student = instance.student
-    current_class = instance.selected_class
+    class_level = instance.class_level
     exam_type = instance.exam_type
 
     exam_results = Result.objects.filter(
         student=student,
         exam_type=exam_type,
-        selected_class=current_class
+        class_level=class_level
     )
 
     subject_count = exam_results.count()
@@ -394,7 +418,7 @@ def update_student_exam_info(sender, instance, **kwargs):
     student_exam_info, created = StudentExamInfo.objects.get_or_create(
         student=student,
         exam_type=exam_type,
-        selected_class=current_class,
+        class_level=class_level,
     )
 
     student_exam_info.division = division
@@ -406,7 +430,7 @@ def update_student_exam_info(sender, instance, **kwargs):
 class ExamMetrics(models.Model):
     student = models.ForeignKey(Students, on_delete=models.CASCADE)
     exam_type = models.ForeignKey(ExamType, on_delete=models.CASCADE)
-    selected_class = models.CharField(max_length=255, null=True, blank=True)
+    class_level = models.ForeignKey(ClassLevel, on_delete=models.CASCADE, related_name='studentemetrics') 
     total_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=0)
     average = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=0)
     grade = models.CharField(max_length=1, null=True, blank=True)
@@ -424,7 +448,7 @@ class ExamMetrics(models.Model):
 def update_student_position(sender, instance, **kwargs):
     # Retrieve all students with the same current class and exam type
     students = ExamMetrics.objects.filter(
-        selected_class=instance.selected_class,
+        class_level=instance.class_level,
         exam_type=instance.exam_type,
     ).order_by('-total_marks', 'created_at')  # Order by total_marks in descending order and created_at for tie-breaker
 
@@ -439,7 +463,7 @@ def update_student_position(sender, instance, **kwargs):
         student_position, created = StudentPositionInfo.objects.get_or_create(
             student=student.student,
             exam_type=student.exam_type,
-            current_class=student.selected_class,
+            class_level=student.class_level,
         )
         student_position.position = position
         student_position.save()
@@ -479,12 +503,12 @@ def update_exam_metrics_on_update(sender, instance, **kwargs):
 def update_exam_metrics(instance):
     student = instance.student
     exam_type = instance.exam_type
-    selected_class = instance.selected_class
+    class_level = instance.class_level
 
     exam_results = Result.objects.filter(
         student=student,
         exam_type=exam_type,
-        selected_class=selected_class
+        class_level=class_level
     )
 
     total_marks = exam_results.aggregate(total_marks=Sum('marks'))['total_marks'] or 0
@@ -498,7 +522,7 @@ def update_exam_metrics(instance):
     exam_metrics, created = ExamMetrics.objects.get_or_create(
         student=student,
         exam_type=exam_type,
-        selected_class=selected_class,
+        class_level=class_level,
     )
 
     exam_metrics.total_marks = total_marks
@@ -534,7 +558,7 @@ def fill_result_model(sender, instance, created, **kwargs):
     if created:
         student = instance.student
         exam_type = instance.exam_type
-        selected_class = instance.selected_class
+        class_level = instance.class_level
         date_of_exam = instance.date_of_exam 
         
         subject_fields = {
@@ -571,7 +595,7 @@ def fill_result_model(sender, instance, created, **kwargs):
                     subject=subject,
                     exam_type=exam_type,
                     date_of_exam=date_of_exam,
-                    selected_class=selected_class,
+                    class_level=class_level,
                     defaults={'marks': score, 'total_marks': 100}
                 )
        
@@ -580,22 +604,24 @@ class SchoolFeesInstallment(models.Model):
     amount_required = models.DecimalField(max_digits=10, decimal_places=2)
     start_date = models.DateField()
     end_date = models.DateField()
-    school_class = models.CharField(max_length=255, null=True, blank=True)
-
+    class_level = models.ForeignKey(ClassLevel, on_delete=models.CASCADE, related_name='installments', null=True, blank=True)
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['installment_name', 'class_level'], name='unique_installment_name_per_class_level')
+        ]
     def __str__(self):
-        return f"{self.installment_name}-({self.school_class})"
+        return f"{self.installment_name} - ({self.class_level.class_name if self.class_level else 'No Class Level'})"
     
 class FeeStructure(models.Model):
-    school_class = models.CharField(max_length=20, choices=CLASS_CHOICES)
+    class_level = models.OneToOneField(ClassLevel, on_delete=models.CASCADE, related_name='fee_structures')
     school_fee_amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.0)])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    objects = models.Manager()
     
-
-    def save(self, *args, **kwargs):
-        self.total_amount = self.school_fee_amount 
-        super().save(*args, **kwargs)
-
+    
     def __str__(self):
-        return f"{self.school_class} - Total Fee: {self.total_amount}"    
+        return f"{self.class_level.class_name} - Total Fee: {self.school_fee_amount}"   
 
 
 PAYMENT_STATUS_CHOICES = [
@@ -618,6 +644,7 @@ class SchoolFeesPayment(models.Model):
 class Expenditure(models.Model):
     description = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    branch = models.CharField(max_length=20, choices=BRANCH_CHOICES, blank=True)
     date = models.DateField()
     CATEGORY_CHOICES = [
         ('Salary', 'Salary'),
@@ -638,7 +665,7 @@ FEE_TYPE_CHOICES = [
 ]
 
 class ClassFee(models.Model):
-    class_name = models.CharField(max_length=20, choices=CLASS_CHOICES)
+    class_level = models.ForeignKey(ClassLevel, on_delete=models.CASCADE)
     fee_type = models.CharField(max_length=20, choices=FEE_TYPE_CHOICES)
     fee_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -646,10 +673,12 @@ class ClassFee(models.Model):
     objects = models.Manager()
 
     class Meta:
-        unique_together = ('class_name', 'fee_type')
+        constraints = [
+            models.UniqueConstraint(fields=['class_level', 'fee_type'], name='unique_classfee_per_class_level')
+        ]
 
     def __str__(self):
-        return f'{self.class_name} - {self.fee_type} - {self.fee_amount}'
+        return f'{self.class_level.class_name} - {self.fee_type} - {self.fee_amount}'
 
 
 
@@ -688,30 +717,47 @@ class FeePayment(models.Model):
         return self.amount_paid >= self.class_fee.fee_amount
     
 class MadrasatulFee(models.Model):
-    class_name = models.CharField(max_length=20, choices=CLASS_CHOICES)
+    class_level = models.ForeignKey(ClassLevel, on_delete=models.CASCADE)
     fee_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
 
     class Meta:
-        unique_together = ('class_name', 'fee_amount')
+        constraints = [
+            models.UniqueConstraint(fields=['class_level', 'fee_amount'], name='unique_madrasatulfee_per_class_level')
+        ]
+
 
     def __str__(self):
-        return f'{self.class_name} - {self.fee_amount}'
+        return f'{self.class_level.class_name} - {self.fee_amount}'
 
 class MadrasatulFeePayment(models.Model):
     student = models.ForeignKey(Students, on_delete=models.CASCADE)
     matrasatul_fee = models.ForeignKey(MadrasatulFee, on_delete=models.CASCADE)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
     payment_date = models.DateTimeField(default=timezone.now)
-    amount_remaining = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    balance = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    amount_remaining = models.DecimalField(max_digits=10, decimal_places=2, default=0)  
     payment_status = models.CharField(max_length=10, choices=PAYMENT_STATUS_CHOICES, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
+    
+    def save(self, *args, **kwargs):
+        # Calculate the remaining amount
+        if self.matrasatul_fee and self.amount_paid is not None:
+            self.amount_remaining = self.matrasatul_fee.fee_amount - self.amount_paid
+        else:
+            self.amount_remaining = self.matrasatul_fee.fee_amount
 
+        # Update payment status based on whether the amount is fully paid
+        if self.amount_remaining <= 0:
+            self.payment_status = 'Completed'
+        else:
+            self.payment_status = 'Incomplete'
+
+        super().save(*args, **kwargs)
+        
     def __str__(self):
         return f'{self.student.full_name} - Matrasatul - {self.amount_paid}'
 
@@ -726,6 +772,11 @@ class TransportFee(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['location', 'fee_amount'], name='unique_transportfee')
+        ]
     def __str__(self):
         return f'{self.location} - {self.fee_amount}' 
     
@@ -733,13 +784,27 @@ class TransportFeePayment(models.Model):
     student = models.ForeignKey(Students, on_delete=models.CASCADE)
     transport_fee = models.ForeignKey(TransportFee, on_delete=models.CASCADE)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
-    amount_remaining = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    balance = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    amount_remaining = models.DecimalField(max_digits=10, decimal_places=2, default=0)    
     payment_status = models.CharField(max_length=10, choices=PAYMENT_STATUS_CHOICES, default='Pending')
     payment_date = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
+    
+    def save(self, *args, **kwargs):
+        # Calculate the remaining amount
+        if self.transport_fee and self.amount_paid is not None:
+            self.amount_remaining = self.transport_fee.fee_amount - self.amount_paid
+        else:
+            self.amount_remaining = self.transport_fee.fee_amount
+
+        # Update payment status based on whether the amount is fully paid
+        if self.amount_remaining <= 0:
+            self.payment_status = 'Completed'
+        else:
+            self.payment_status = 'Incomplete'
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.student.full_name} - {self.transport_fee.location} - {self.amount_paid}'

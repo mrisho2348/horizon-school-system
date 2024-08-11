@@ -1,10 +1,10 @@
  
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 {% block title %}
       Student apply for leave  
 {% endblock title %}
 {% block breadcrumb %}
-{% include "hod_template/modal_form.html" %}
+{% include "headmaster_template/modal_form.html" %}
        
 {% endblock breadcrumb %}
 {% block main_content %}
@@ -44,12 +44,12 @@
                                   <td>{{leave.created_at}}</td>
                                   <td>
                                     {% if leave.leave_status == 0 %}
-                                    <a href="{% url 'admin_student_approve_leave' leave_id=leave.id %}" class="btn btn-success ">APPROVE</a>
-                                    <a  href="{% url 'admin_student_disapprove_leave' leave_id=leave.id %}"  class="btn btn-danger ">DISAPPROVE</a>
+                                    <a href="{% url 'headmaster_student_approve_leave' leave_id=leave.id %}" class="btn btn-success ">APPROVE</a>
+                                    <a  href="{% url 'headmaster_student_disapprove_leave' leave_id=leave.id %}"  class="btn btn-danger ">DISAPPROVE</a>
                                     {% elif leave.leave_status == 1 %}  
-                                     <a  href="{% url 'admin_student_disapprove_leave' leave_id=leave.id %}"   class="btn btn-warning  ">APPROVED</a>   
+                                     <a  href="{% url 'headmaster_student_disapprove_leave' leave_id=leave.id %}"   class="btn btn-warning  ">APPROVED</a>   
                                      {% else %}
-                                     <a  href="{% url 'admin_student_approve_leave' leave_id=leave.id %}"  class="btn btn-danger">DISAPPROVED</a>   
+                                     <a  href="{% url 'headmaster_student_approve_leave' leave_id=leave.id %}"  class="btn btn-danger">DISAPPROVED</a>   
                                       {{feedback.feedback_reply}}
                                     {% endif %}
                                   </td>
@@ -94,7 +94,7 @@
         </div>
       </div>
     </div>
-    {% include 'hod_template/datatable.html' %}
+    {% include 'headmaster_template/datatable.html' %}
 
   {% endblock main_content %}
 

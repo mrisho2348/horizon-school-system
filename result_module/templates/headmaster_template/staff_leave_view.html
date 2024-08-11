@@ -1,10 +1,10 @@
  
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 {% block title %}
       Staff Leavel    
 {% endblock title %}
 {% block breadcrumb %}
-{% include "hod_template/modal_form.html" %}
+{% include "headmaster_template/modal_form.html" %}
        
 {% endblock breadcrumb %}
 {% block main_content %}
@@ -37,18 +37,18 @@
                                   {% for leave in  leaves %}
                                   <tr>
                                     <td>{{leave.id}}</td>
-                                    <td>{{leave.staff_id.admin_id}}</td>
+                                    <td>{{leave.staff_id.headmaster_id}}</td>
                                     <td>{{leave.staff_id.admin.first_name}} {{leave.staff_id.admin.last_name}}</td>
                                     <td>{{leave.feedback}}</td>
                                     <td>{{leave.created_at}}</td>                                  
                                     <td>
                                       {% if leave.leave_status == 0 %}
-                                      <a class="btn btn-success "  href="{% url 'admin_staff_approve_leave' leave_id=leave.id %}" >APPROVE</a>
-                                      <a class="btn btn-danger "  href="{% url 'admin_staff_disapprove_leave' leave_id=leave.id %}" >DISAPPROVE</a>
+                                      <a class="btn btn-success "  href="{% url 'headmaster_staff_approve_leave' leave_id=leave.id %}" >APPROVE</a>
+                                      <a class="btn btn-danger "  href="{% url 'headmaster_staff_disapprove_leave' leave_id=leave.id %}" >DISAPPROVE</a>
                                       {% elif leave.leave_status == 1 %}
-                                      <a class="btn btn-warning "  href="{% url 'admin_staff_disapprove_leave' leave_id=leave.id %}" >APPROVED</a>
+                                      <a class="btn btn-warning "  href="{% url 'headmaster_staff_disapprove_leave' leave_id=leave.id %}" >APPROVED</a>
                                       {% else %}                                   
-                                      <a class="btn btn-danger"  href="{% url 'admin_staff_approve_leave' leave_id=leave.id %}" >DISAPPROVED</a>
+                                      <a class="btn btn-danger"  href="{% url 'headmaster_staff_approve_leave' leave_id=leave.id %}" >DISAPPROVED</a>
                                       {% endif %}
                                     </td>
                                     
@@ -72,5 +72,5 @@
 
 
    
-            {% include 'hod_template/datatable.html' %}
+            {% include 'headmaster_template/datatable.html' %}
   {% endblock main_content %}

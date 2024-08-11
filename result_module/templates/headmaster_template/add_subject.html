@@ -1,14 +1,10 @@
  
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 {% block title %}
         Add Subject    
 {% endblock title %}
 {% block main_content %}
-{% load static %}
-<section class="content">
-    <div class="container-fluid">
-        <div class="content-wrappe">
-            <!-- Content Header (Page header) -->    
+{% load static %} 
         
             <!-- Main content -->
             <section class="content">
@@ -22,8 +18,8 @@
 
                     </div>
 
-                    {% url 'admin_addsubjectsave' as action_path %}
-                    {% include 'admin_template/form_template.html' with messages=messages forms=forms action_path=action_path button_text="Add Subject" %}
+                    {% url 'headmaster_addsubjectsave' as action_path %}
+                    {% include 'headmaster_template/form_template.html' with messages=messages forms=forms action_path=action_path button_text="Add Subject" %}
                   </div>
 
                   </div>
@@ -33,8 +29,5 @@
               
             </section>
             <!-- /.content -->
-          </div>
-    </div><!-- /.container-fluid -->
-  </section>
 
   {% endblock main_content %}

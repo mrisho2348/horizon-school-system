@@ -1,11 +1,11 @@
-{% extends 'hod_template/base_template.html' %}
+{% extends 'headmaster_template/base_template.html' %}
 
 {% block title %}
 School Fees Payments
 {% endblock title %}
 
 {% block breadcrumb %}
-{% include "hod_template/modal_form.html" %}
+{% include "headmaster_template/modal_form.html" %}
 {% endblock breadcrumb %}
 
 {% block main_content %}
@@ -36,7 +36,7 @@ School Fees Payments
                                 {% for payment in payments %}
                                 <tr>                             
                                     <td>{{ payment.student.full_name }}</td>
-                                    <td>{{ payment.student.current_class }}</td>
+                                    <td>{{ payment.student.class_level }}</td>
                                     <td>{{ payment.installment.installment_name }}</td>
                                     <td>{{ payment.installment.amount_required }}</td>
                                     <td>{{ payment.amount_paid }}</td>
@@ -55,5 +55,5 @@ School Fees Payments
         </div>
     </div>
 </div>
-{% include 'hod_template/datatable.html' %}
+{% include 'headmaster_template/datatable.html' %}
 {% endblock main_content %}

@@ -4,103 +4,184 @@ import json
 from django.http import  HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.db.models import Sum, F
 from django.db import models
 from django.db.models import Q
+from django.views.generic import ListView
+from django.core.exceptions import PermissionDenied
 from django.db.models import Count
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET,require_POST
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from result_module.forms import FeeStructureForm
+from result_module.forms import ClassFeeForm, ExpenditureForm, FeePaymentForm, FeeStructureForm, MadrasatulFeeForm, MadrasatulFeePaymentForm, TransportFeeForm, TransportFeePaymentForm
 from result_module.models import (
+    ClassFee,
+    ClassLevel,
     Expenditure,
+    FeePayment,
     FeeStructure,
     FeedBackStaff,
-    LeaveReportStaffs,   
+    LeaveReportStaffs,
+    MadrasatulFee,
+    MadrasatulFeePayment,   
     SchoolFeesInstallment,
     SchoolFeesPayment,   
     Staffs,
     Students,
+    Subject,
+    TransportFee,
+    TransportFeePayment,
     )
 
 
 @login_required
 def accountant_home(request):
+    # Get the branch of the currently logged-in staff
+    staff = request.user.staffs
+    staff_branch = staff.branch
+
     try:
-        staff = Staffs.objects.get(admin=request.user)
-    except Staffs.DoesNotExist:
-        # Handle the case when the staff doesn't exist for the logged-in user
-        return render(request, "accountant_template/error.html")
+        # Fetch total number of students corresponding to the staff branch
+        total_students = Students.objects.filter(branch=staff_branch).count()
+    except Exception as e:
+        return render(request, "accountant_template/error.html", {"error_message": f"Error fetching total students: {str(e)}"})  
+    
+    try:
+        # Fetch total number of subjects (no branch filtering assumed)
+        total_subjects = Subject.objects.count()
+    except Exception as e:
+        return render(request, "accountant_template/error.html", {"error_message": f"Error fetching total subjects: {str(e)}"})
 
-    # Counting the total number of students
-    students_count = Students.objects.count()
- 
-    # Counting the total number of approved leaves for the current staff
-    leave_count = LeaveReportStaffs.objects.filter(staff_id=staff.id, leave_status=1).count()
+    try:
+        # Fetch total number of female students corresponding to the staff branch
+        total_female_students = Students.objects.filter(gender='Female', branch=staff_branch).count()
+    except Exception as e:
+        return render(request, "accountant_template/error.html", {"error_message": f"Error fetching total female students: {str(e)}"})
 
-    # Calculating total fees collected
-    total_fees_collected = SchoolFeesPayment.objects.aggregate(total_collected=models.Sum('amount_paid'))['total_collected'] or 0
+    try:
+        # Fetch total number of male students corresponding to the staff branch
+        total_male_students = Students.objects.filter(gender='Male', branch=staff_branch).count()
+    except Exception as e:
+        return render(request, "accountant_template/error.html", {"error_message": f"Error fetching total male students: {str(e)}"})
 
-    # Counting pending payments
-    pending_payments_count = SchoolFeesPayment.objects.filter(amount_remaining__gt=0).count()
+    try:
+        # Counting the total number of students corresponding to the staff branch
+        students_count = Students.objects.filter(branch=staff_branch).count()
+    except Exception as e:
+        return render(request, "accountant_template/error.html", {"error_message": f"Error counting total students: {str(e)}"})
 
-    # Calculating total expenditure
-    total_expenditure = Expenditure.objects.aggregate(total_spent=models.Sum('amount'))['total_spent'] or 0
-    net_profit =  total_fees_collected - total_expenditure
-    context = {
-     
-        "student_count": students_count,
-        "leave_count": leave_count,
-        "total_fees_collected": total_fees_collected,
-        "pending_payments_count": pending_payments_count,
-        "total_expenditure": total_expenditure,
-        "net_profit": net_profit,
-        "staff": staff,
-    }
+    try:
+        # Calculating total fees collected corresponding to the staff branch
+        total_school_fees = SchoolFeesPayment.objects.filter(student__branch=staff_branch).aggregate(total_collected=Sum('amount_paid'))['total_collected'] or 0
+        total_madrasatul_fees = MadrasatulFeePayment.objects.filter(student__branch=staff_branch).aggregate(total_collected=Sum('amount_paid'))['total_collected'] or 0
+        total_transport_fees = TransportFeePayment.objects.filter(student__branch=staff_branch).aggregate(total_collected=Sum('amount_paid'))['total_collected'] or 0
+        total_fee_payment = FeePayment.objects.filter(student__branch=staff_branch).aggregate(total_collected=Sum('amount_paid'))['total_collected'] or 0
 
-    return render(request, "accountant_template/accountant_home.html", context)
+        total_fees_collected = (total_school_fees + total_madrasatul_fees +
+                                total_transport_fees + total_fee_payment)
+    except Exception as e:
+        return render(request, "accountant_template/error.html", {"error_message": f"Error calculating total fees collected: {str(e)}"})
 
+    try:
+        # Counting pending payments corresponding to the staff branch
+        pending_payments_count = SchoolFeesPayment.objects.filter(student__branch=staff_branch, amount_remaining__gt=0).count()
+    except Exception as e:
+        return render(request, "accountant_template/error.html", {"error_message": f"Error counting pending payments: {str(e)}"})
 
+    try:
+        # Calculating total expenditure corresponding to the staff branch
+        total_expenditure = Expenditure.objects.filter(branch=staff_branch).aggregate(total_spent=Sum('amount'))['total_spent'] or 0
+    except Exception as e:
+        return render(request, "accountant_template/error.html", {"error_message": f"Error calculating total expenditure: {str(e)}"})
+
+    try:
+        net_profit = total_fees_collected - total_expenditure
+    except Exception as e:
+        return render(request, "accountant_template/error.html", {"error_message": f"Error calculating net profit: {str(e)}"})
+
+    return render(request, "accountant_template/accountant_home.html", {
+        'total_students': total_students,
+        'total_subjects': total_subjects,
+        'total_female_students': total_female_students,
+        'total_male_students': total_male_students,
+        'student_count': students_count,
+        'total_fees_collected': total_fees_collected,
+        'pending_payments_count': pending_payments_count,
+        'total_expenditure': total_expenditure,
+        'net_profit': net_profit,
+        'total_school_fees': total_school_fees,
+        'total_madrasatul_fees': total_madrasatul_fees,
+        'total_transport_fees': total_transport_fees,
+        'total_fee_payment': total_fee_payment
+    })
+
+@login_required
 def get_financial_yearly_data(request):
     if request.method == 'GET' and 'year' in request.GET:
         selected_year = request.GET.get('year')
-        # Example query to fetch financial data for the selected year
         try:
-            # Fetch fees collected (income)
-            fees_collected = SchoolFeesPayment.objects.filter(date_paid__year=selected_year).aggregate(total_fees_collected=models.Sum('amount_paid'))['total_fees_collected'] or 0
+            # Get the branch of the currently logged-in staff
+            staff = request.user.staffs
+            if not staff:
+                raise PermissionDenied("Staff information not available.")
+            staff_branch = staff.branch
+            
+            # Fetch fees collected (income) for the selected year and corresponding branch
+            fees_collected = SchoolFeesPayment.objects.filter(
+                date_paid__year=selected_year,
+                student__branch=staff_branch
+            ).aggregate(total_fees_collected=models.Sum('amount_paid'))['total_fees_collected'] or 0
            
-            # Fetch expenditure (example: assuming you have an Expenditure model)
-            expenditure = Expenditure.objects.filter(date__year=selected_year).aggregate(total_expenditure=models.Sum('amount'))['total_expenditure'] or 0
+            # Fetch expenditure for the selected year and corresponding branch
+            expenditure = Expenditure.objects.filter(
+                date__year=selected_year,
+                branch=staff_branch
+            ).aggregate(total_expenditure=models.Sum('amount'))['total_expenditure'] or 0
 
             # Prepare data to return as JSON
             data = {
-                'income': (fees_collected),
+                'income': fees_collected,
                 'expenditure': expenditure,
             }
             return JsonResponse(data)
+        except PermissionDenied as e:
+            return JsonResponse({'error': str(e)}, status=403)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     
     # Handle invalid requests or missing parameters
-    return JsonResponse({'error': 'Invalid request'})
+    return JsonResponse({'error': 'Invalid request or year parameter missing'}, status=400)
 
+
+@login_required
 @require_GET
 def get_school_fees_monthly_data(request):
     year = request.GET.get('year')
     
+    if not year:
+        return JsonResponse({'error': 'Year parameter is required'}, status=400)
+    
+    # Get the branch of the currently logged-in staff
+    staff_branch = request.user.staffs.branch    
     # Initialize monthly data dictionary
     monthly_data_dict = {}
     
-    # Fetch monthly income data (fees collected)
-    fees_collected_data = SchoolFeesPayment.objects.filter(date_paid__year=year).values('date_paid__month').annotate(
+    # Fetch monthly income data (fees collected) for the selected year and corresponding branch
+    fees_collected_data = SchoolFeesPayment.objects.filter(
+        date_paid__year=year,
+        student__branch=staff_branch
+    ).values('date_paid__month').annotate(
         income=Sum('amount_paid')
     ).order_by('date_paid__month')
 
+    # Populate the dictionary with income data
     for entry in fees_collected_data:
         month = entry['date_paid__month']
         if month not in monthly_data_dict:
@@ -119,18 +200,30 @@ def get_school_fees_monthly_data(request):
     return JsonResponse(response_data, safe=False)
 
 
+@login_required
 @require_GET
 def get_expenditure_monthly_data(request):
     year = request.GET.get('year')
     
+    # Get the currently logged-in staff member
+    try:
+        current_staff = Staffs.objects.get(admin=request.user)
+    except Staffs.DoesNotExist:
+        return JsonResponse({'error': 'Staff member not found'}, status=404)
+    
+    # Ensure the branch of the staff is considered
+    staff_branch = current_staff.branch
+
     # Initialize monthly data dictionary
     monthly_data_dict = {}
     
-    # Fetch monthly expenditure data
-    expenditure_data = Expenditure.objects.filter(date__year=year).values('date__month').annotate(
+    # Fetch monthly expenditure data for the staff's branch
+    expenditure_data = Expenditure.objects.filter(
+        date__year=year,
+        branch=staff_branch  # Filter expenditures by the branch of the current staff
+    ).values('date__month').annotate(
         expenditure=Sum('amount')
-    ).order_by('date__month')
-
+    ).order_by('date__month')    
     for entry in expenditure_data:
         month = entry['date__month']
         if month not in monthly_data_dict:
@@ -148,23 +241,32 @@ def get_expenditure_monthly_data(request):
 
     return JsonResponse(response_data, safe=False)
 
-@require_GET
+
+@login_required
 def get_classwise_fee_payment_data(request):
     try:
+        # Get the year from request parameters
         year = request.GET.get('year')
+        
+        # Get the currently logged-in staff member
+        current_staff = Staffs.objects.get(admin=request.user)
+
+        # Ensure the branch of the staff is considered
+        staff_branch = current_staff.branch
 
         # Query to count number of distinct students per class who have made payments
         classwise_data = Students.objects.filter(
-            schoolfeespayment__date_paid__year=year
-        ).values('current_class').annotate(
+            schoolfeespayment__date_paid__year=year,
+            branch=staff_branch  # Filter students by the branch of the current staff
+        ).values('class_level').annotate(
             fee_payments_count=Count('id', distinct=True)
-        ).order_by('current_class')
+        ).order_by('class_level')
 
         # Prepare response data
         response_data = []
         for entry in classwise_data:
             response_data.append({
-                'class_name': entry['current_class'],
+                'class_name': entry['class_level'],
                 'fee_payments_count': entry['fee_payments_count'],
             })
 
@@ -172,110 +274,113 @@ def get_classwise_fee_payment_data(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
+    
+    
+@login_required
 def student_list(request):
-    students = Students.objects.all()
+    # Get the currently logged-in staff member
+    try:
+        current_staff = Staffs.objects.get(admin=request.user)
+    except Staffs.DoesNotExist:
+        return render(request, 'error.html', {'error': 'Staff member not found'})
+
+    # Extract the branch of the staff member
+    staff_branch = current_staff.branch
+
+    # Filter students by the branch of the current staff member
+    students = Students.objects.filter(branch=staff_branch)
+
     context = {
         'students': students
     }
     return render(request, 'accountant_template/student_list.html', context)
 
+
+@login_required
 def school_fees_installments_list(request):
     installments = SchoolFeesInstallment.objects.all()
+    class_levels = ClassLevel.objects.all()
     context = {
-        'installments': installments
+        'installments': installments,
+        'class_levels': class_levels
     }
     return render(request, 'accountant_template/school_fees_installments_list.html', context)
 
+
+@login_required
 def fees_collected(request):
-    total_fees_collected = SchoolFeesPayment.objects.aggregate(total_collected=models.Sum('amount_paid'))['total_collected'] or 0
-    installments = SchoolFeesPayment.objects.filter(amount_remaining=0)
+    # Get the currently logged-in staff member
+    try:
+        current_staff = Staffs.objects.get(admin=request.user)
+    except Staffs.DoesNotExist:
+        return render(request, 'error.html', {'error': 'Staff member not found'})
+
+    # Extract the branch of the staff member
+    staff_branch = current_staff.branch
+
+    # Filter SchoolFeesPayment by the staff's branch
+    total_fees_collected = SchoolFeesPayment.objects.filter(
+        student__branch=staff_branch
+    ).aggregate(total_collected=Sum('amount_paid'))['total_collected'] or 0
+
+    installments = SchoolFeesPayment.objects.filter(
+        amount_remaining=0,
+        student__branch=staff_branch
+    )
+
     context = {
         'installments': installments,
         'total_fees_collected': total_fees_collected
     }
     return render(request, 'accountant_template/fees_collected.html', context)
 
+
+@login_required
 def pending_payments(request):
-    pending_payments = SchoolFeesPayment.objects.filter(payment_status='Incomplete')
+    # Get the currently logged-in staff member
+    try:
+        current_staff = Staffs.objects.get(admin=request.user)
+    except Staffs.DoesNotExist:
+        return render(request, 'error.html', {'error': 'Staff member not found'})
+
+    # Extract the branch of the staff member
+    staff_branch = current_staff.branch
+
+    # Filter pending payments by the staff's branch
+    pending_payments = SchoolFeesPayment.objects.filter(
+        payment_status='Incomplete',
+        student__branch=staff_branch
+    )
+
     context = {
         'pending_payments': pending_payments
     }
     return render(request, 'accountant_template/pending_payments.html', context)
 
+
+@login_required
 def expenditure_list(request):
-    expenditures = Expenditure.objects.all()
-    total_expenditure = Expenditure.objects.aggregate(total=models.Sum('amount'))['total'] or 0
+    # Get the currently logged-in staff member
+    try:
+        current_staff = Staffs.objects.get(admin=request.user)
+    except Staffs.DoesNotExist:
+        return render(request, 'error.html', {'error': 'Staff member not found'})
+
+    # Extract the branch of the staff member
+    staff_branch = current_staff.branch
+
+    # Filter expenditures by the staff's branch
+    expenditures = Expenditure.objects.filter(
+        branch=staff_branch
+    )
+    total_expenditure = expenditures.aggregate(total=Sum('amount'))['total'] or 0
+
     context = {
         'expenditures': expenditures,
         'total_expenditure': total_expenditure
     }
     return render(request, 'accountant_template/expenditure.html', context)
 
-@require_POST
-@csrf_exempt
-def add_expenditure_view(request):
-    try:
-        # Deserialize request data
-        data = json.loads(request.body)
-        
-        # Extract form data
-        expenditure_id = data.get('expenditure_id', None)  # If 'id' is present, it indicates an update request
-        description = data.get('description')
-        amount = Decimal(data.get('amount'))  # Convert amount to Decimal
-        date = data.get('date')
-        category = data.get('category')
-
-        # Validate expenditure amount against available funds
-        if category in ['Salary', 'Utilities', 'Supplies', 'Maintenance']:  # Assuming these categories are income related
-            total_income = Decimal(SchoolFeesPayment.objects.aggregate(total_income=Sum('amount_paid'))['total_income'] or 0)
-            total_expenditure = Decimal(Expenditure.objects.filter(category=category).aggregate(total_expenditure=Sum('amount'))['total_expenditure'] or 0)
-            available_amount = total_income - total_expenditure
-            if amount > available_amount:
-                return JsonResponse({'success': False, 'error': f'Amount exceeds available funds ({available_amount}).'})
-
-        # Validate expenditure amount against all amount paid
-        if category == 'Other':  # Adjust the condition based on your specific logic
-            total_amount_paid = Decimal(SchoolFeesPayment.objects.aggregate(total_amount_paid=Sum('amount_paid'))['total_amount_paid'] or 0)
-            if amount > total_amount_paid:
-                return JsonResponse({'success': False, 'error': f'Amount exceeds total amount paid ({total_amount_paid}).'})
-        
-        if expenditure_id:
-            # Update existing expenditure object
-            expenditure = Expenditure.objects.get(id=expenditure_id)
-            expenditure.description = description
-            expenditure.amount = amount
-            expenditure.date = date
-            expenditure.category = category
-            expenditure.save()
-            
-            # Prepare success response for update
-            response_data = {
-                'success': True,
-                'message': f'Expenditure "{expenditure}" updated successfully.'
-            }
-        else:
-            # Create new Expenditure object
-            expenditure = Expenditure.objects.create(
-                description=description,
-                amount=amount,
-                date=date,
-                category=category
-            )
-            
-            # Prepare success response for creation
-            response_data = {
-                'success': True,
-                'message': f'Expenditure "{expenditure}" added successfully.'
-            }
-        
-        return JsonResponse(response_data)
-    
-    except ObjectDoesNotExist as e:
-        return JsonResponse({'success': False, 'error': 'Expenditure not found.'})
-    
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
 
 @require_POST
 @csrf_exempt
@@ -298,7 +403,7 @@ def add_installment(request):
         amount_required = request.POST.get('amount_required')
         start_date_str = request.POST.get('start_date')
         end_date_str = request.POST.get('end_date')
-        school_class = request.POST.get('school_class')
+        class_level_id = request.POST.get('class_level')
         
         try:
             start_date =  datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
@@ -313,7 +418,7 @@ def add_installment(request):
                 if SchoolFeesInstallment.objects.exclude(pk=installment_id).filter(
                     installment_name=installment_name,
                     end_date__gte=start_date,
-                    school_class=school_class,
+                    class_level_id=class_level_id,
                 ).exists():
                     return JsonResponse({'status': False, 'message': 'Another installment with the same name already exists.'})        
 
@@ -322,17 +427,17 @@ def add_installment(request):
                 installment.amount_required = amount_required
                 installment.start_date = start_date
                 installment.end_date = end_date
-                installment.school_class = school_class
+                installment.class_level_id = class_level_id
                 installment.save()
                 return JsonResponse({'status': True, 'message': 'Installment updated successfully!'})
             else:
                  # Check if the school class already has three installments
-                if SchoolFeesInstallment.objects.filter(school_class=school_class).count() >= 3:
+                if SchoolFeesInstallment.objects.filter(class_level_id=class_level_id).count() >= 3:
                     return JsonResponse({'status': False, 'message': 'Each school class can have only three installments.'})
 
                 # Adding new installment              
                 previous_installment_end_date = SchoolFeesInstallment.objects.filter(
-                    school_class=school_class
+                    class_level_id=class_level_id
                 ).order_by('-end_date').first()
 
                 if previous_installment_end_date and start_date <= previous_installment_end_date.end_date:
@@ -349,7 +454,7 @@ def add_installment(request):
                     amount_required=amount_required,
                     start_date=start_date,
                     end_date=end_date,
-                    school_class=school_class
+                    class_level_id=class_level_id
                 )
                 return JsonResponse({'status': True, 'message': 'Installment added successfully!'})
         except Exception as e:
@@ -371,10 +476,31 @@ def delete_installment(request):
             return JsonResponse({'status': False, 'message': str(e)})
     return JsonResponse({'status': False, 'message': 'Invalid request method.'})
 
+@login_required
 def payment_list(request):
-    payments = SchoolFeesPayment.objects.all().select_related('student', 'installment')
-    students = Students.objects.all() 
-    return render(request, 'accountant_template/payment_list.html', {'payments': payments,'students':students})
+    # Get the currently logged-in staff member
+    try:
+        current_staff = Staffs.objects.get(admin=request.user)
+    except Staffs.DoesNotExist:
+        return render(request, 'error.html', {'error': 'Staff member not found'})
+
+    # Extract the branch of the staff member
+    staff_branch = current_staff.branch
+
+    # Filter payments by the staff's branch
+    payments = SchoolFeesPayment.objects.filter(
+        student__branch=staff_branch
+    ).select_related('student', 'installment')
+
+    # Filter students by the staff's branch
+    students = Students.objects.filter(
+        branch=staff_branch
+    )
+
+    return render(request, 'accountant_template/payment_list.html', {
+        'payments': payments,
+        'students': students
+    })
 
 
 @csrf_exempt
@@ -468,7 +594,7 @@ def add_payment(request):
 
             # Find the correct installment for the payment date
             installment = SchoolFeesInstallment.objects.filter(
-                school_class=student.current_class,
+                class_level=student.class_level,
                 start_date__lte=date_paid,
                 end_date__gte=date_paid
             ).first()
@@ -555,7 +681,7 @@ def update_payment(request):
 
             # Find the correct installment for the payment date
             installment = SchoolFeesInstallment.objects.filter(
-                school_class=student.current_class,
+                class_level=student.class_level,
                 start_date__lte=date_paid,
                 end_date__gte=date_paid
             ).first()
@@ -607,22 +733,37 @@ def update_payment(request):
 
 @login_required
 def filter_payments(request):
-    installments  = SchoolFeesInstallment.objects.all()   
-    return render(request, "accountant_template/filter_payments.html",{"installments":installments}) 
+    installments  = SchoolFeesInstallment.objects.all() 
+    class_levels = ClassLevel.objects.all()  
+    return render(request, "accountant_template/filter_payments.html",{"installments":installments,"class_levels":class_levels}) 
 
+@login_required
 def search_payments(request):
     if request.method == 'POST' and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         # Extract form data
-        selected_class = request.POST.get('selected_class')
+        class_level_id = request.POST.get('class_level')
         installment_id = request.POST.get('installment_id')
         payment_status = request.POST.get('payment_status')
         
-        # Fetch all students of the selected class
-        students = Students.objects.filter(current_class=selected_class)
-        
+        # Retrieve the current staff member and branch
+        try:
+            current_staff = Staffs.objects.get(admin=request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            return JsonResponse({'error': 'Staff member not found'})
+
+        try:
+            # Get class level object
+            class_level = ClassLevel.objects.get(id=class_level_id)
+        except ClassLevel.DoesNotExist:
+            return JsonResponse({'error': 'Invalid class level selected'})
+
+        # Fetch students of the selected class and branch
+        students = Students.objects.filter(class_level_id=class_level, branch=staff_branch)
+
         # Create a list to store each student's payment results
         student_results = []
-        
+
         # Iterate over each student to fetch their payment details
         for student in students:
             payments = SchoolFeesPayment.objects.filter(
@@ -630,13 +771,13 @@ def search_payments(request):
                 installment_id=installment_id,
                 payment_status=payment_status
             )
-            
+
             # Collect the payment details for each student
             for payment in payments:
                 student_results.append({
                     'student_id': student.id,
                     'student_name': student.full_name,
-                    'class': student.current_class,
+                    'class': student.class_level,
                     'installment': payment.installment.installment_name,
                     'amount_paid': payment.amount_paid,
                     'amount_remaining': payment.amount_remaining,
@@ -644,13 +785,122 @@ def search_payments(request):
                     'payment_status': payment.payment_status,
                     'date_paid': payment.date_paid
                 })
-        
+
         # Render the HTML template with the fetched data
         html_result = render_to_string('accountant_template/filter_payments_table.html', {'student_results': student_results})
-        
+
         # Return the HTML result as JSON response
         return JsonResponse({'html_result': html_result})
-    
+
+    return JsonResponse({'error': 'Invalid request'})
+
+@login_required
+def student_payment_fetch(request):    
+    class_levels = ClassLevel.objects.all()
+    return render(request, "accountant_template/student_payment_fetch.html",{"class_levels":class_levels}) 
+
+@login_required
+def payment_fetch(request):
+    if request.method == 'POST' and request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        # Extract form data
+        class_level_id = request.POST.get('class_level')
+        service = request.POST.get('services')
+        payment_status = request.POST.get('payment_status')
+
+        # Retrieve the current staff member and branch
+        try:
+            current_staff = Staffs.objects.get(admin=request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            return JsonResponse({'error': 'Staff member not found'})
+
+        # Get class level object
+        try:
+            class_level = ClassLevel.objects.get(id=class_level_id)
+        except ClassLevel.DoesNotExist:
+            return JsonResponse({'error': 'Invalid class level selected'})
+
+        # Fetch students of the selected class and branch
+        students = Students.objects.filter(class_level=class_level, branch=staff_branch)
+
+        # Initialize student_results list
+        student_results = []
+
+        # Determine which payment model and template to use based on the selected service
+        if service == 'Madrasa':
+            payments_model = MadrasatulFeePayment
+            template_name = 'accountant_template/payment_fetch_madrasa_table.html'
+            for student in students:
+                payments = payments_model.objects.filter(
+                    student=student,
+                    payment_status=payment_status
+                )
+                for payment in payments:
+                    student_results.append({
+                        'student_name': student.full_name,
+                        'class': student.class_level,
+                        'amount_paid': payment.amount_paid,
+                        'amount_remaining': payment.amount_remaining,
+                        'payment_status': payment.payment_status,
+                        'date_paid': payment.payment_date
+                    })
+        
+        elif service == 'Transport':
+            payments_model = TransportFeePayment
+            template_name = 'accountant_template/payment_fetch_transport_table.html'
+            for student in students:
+                payments = payments_model.objects.filter(
+                    student=student,
+                    payment_status=payment_status
+                )
+                for payment in payments:
+                    student_results.append({
+                        'student_name': student.full_name,
+                        'class': student.class_level,
+                        'amount_paid': payment.amount_paid,
+                        'amount_remaining': payment.amount_remaining,
+                        'payment_status': payment.payment_status,
+                        'date_paid': payment.payment_date
+                    })
+
+        elif service in ['Registration', 'Boarding']:
+            payments_model = FeePayment
+            template_name = 'accountant_template/payment_fetch_registration_boarding_table.html'
+            
+            for student in students:
+                # Filter ClassFee based on the service type
+                fee_type = 'Registration' if service == 'Registration' else 'Boarding'
+                class_fees = ClassFee.objects.filter(
+                    class_level=student.class_level,
+                    fee_type=fee_type
+                )
+                
+                for class_fee in class_fees:
+                    payments = payments_model.objects.filter(
+                        student=student,
+                        class_fee=class_fee,
+                        payment_status=payment_status
+                    )
+                    for payment in payments:
+                        student_results.append({
+                            'student_name': student.full_name,
+                            'class': student.class_level,
+                            'fee_type': class_fee.fee_type,
+                            'amount_paid': payment.amount_paid,
+                            'amount_remaining': payment.amount_remaining,
+                            'payment_status': payment.payment_status,
+                            'date_paid': payment.payment_date
+                        })
+
+        else:
+            return JsonResponse({'error': 'Invalid service selected'})
+
+        # Render the HTML template with the fetched data
+        html_result = render_to_string(template_name, {'student_results': student_results})
+
+        # Return the HTML result as JSON response
+        return JsonResponse({'html_result': html_result})
+
     return JsonResponse({'error': 'Invalid request'})
 
 def view_all_payments(request, student_id):
@@ -678,9 +928,9 @@ def add_fee_structure(request, pk=None):
             form = FeeStructureForm(request.POST, instance=fee_structure)
             if form.is_valid():
                 # Ensure unique fee structure per class
-                school_class = form.cleaned_data['school_class']
-                if FeeStructure.objects.filter(school_class=school_class).exclude(pk=pk).exists():
-                    form.add_error('school_class', 'Fee structure for this class already exists.')
+                class_level = form.cleaned_data['class_level']
+                if FeeStructure.objects.filter(class_level=class_level).exclude(pk=pk).exists():
+                    form.add_error('class_level', 'Fee structure for this class already exists.')
                 else:
                     form.save()
                     messages.success(request, 'Fee structure saved successfully.')
@@ -754,3 +1004,649 @@ def update_profile_picture(request):
             # You may want to log this error for debugging purposes
             
     return render(request, 'accountant_template/update_profile_picture.html')
+
+
+@method_decorator(login_required, name='dispatch')
+class FeeStructureListView(ListView):
+    model = FeeStructure
+    template_name = 'accountant_template/school_fees_structure_list.html'
+    context_object_name = 'fee_structures'
+    paginate_by = 20  # Optional: If you want to paginate the results
+
+    def get_queryset(self):
+        # Retrieve the current staff member and branch
+        try:
+            current_staff = Staffs.objects.get(admin=self.request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            staff_branch = None
+
+        # Return filtered queryset based on the staff's branch
+        if staff_branch:
+            return FeeStructure.objects.filter(branch=staff_branch)
+        else:
+            return FeeStructure.objects.none()  # Return no results if staff member is not found
+    
+class FeeStructureDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        class_level = get_object_or_404(FeeStructure, pk=pk)
+        class_level.delete()
+        return redirect('accountant_fee_structure_list')       
+    
+class FeeStructureCreateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            fee_structure = get_object_or_404(FeeStructure, pk=pk)
+            form = FeeStructureForm(instance=fee_structure)
+        else:
+            form = FeeStructureForm()
+
+        return render(request, 'accountant_template/add_fee_structure_form.html', {'form': form})
+
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            fee_structure = get_object_or_404(FeeStructure, pk=pk)
+            form = FeeStructureForm(request.POST, instance=fee_structure)
+        else:
+            form = FeeStructureForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                return redirect('accountant_fee_structure_list')
+            elif action == 'save_and_continue':
+                return redirect('accountant_fee_structure_create')
+
+        return render(request, 'accountant_template/add_fee_structure_form.html', {'form': form})   
+    
+    
+@method_decorator(login_required, name='dispatch')
+class ExpenditureListView(View):
+    def get(self, request, *args, **kwargs):
+        # Retrieve the current staff member and their branch
+        try:
+            current_staff = Staffs.objects.get(admin=self.request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            staff_branch = None
+
+        # Filter expenditures by the staff's branch
+        if staff_branch:
+            expenditures = Expenditure.objects.filter(branch=staff_branch)
+        else:
+            expenditures = Expenditure.objects.none()  # Return no results if staff member is not found
+
+        return render(request, 'accountant_template/expenditure_list.html', {'expenditures': expenditures})
+    
+class ExpenditureDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        expenditure = get_object_or_404(Expenditure, pk=pk)
+        expenditure.delete()
+        return redirect('accountant_expenditure_list')       
+    
+class ExpenditureCreateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            expenditure = get_object_or_404(Expenditure, pk=pk)
+            form = ExpenditureForm(instance=expenditure)
+        else:
+            form = ExpenditureForm()
+
+        return render(request, 'accountant_template/add_expenditure_form.html', {'form': form})
+
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            expenditure = get_object_or_404(Expenditure, pk=pk)
+            form = ExpenditureForm(request.POST, instance=expenditure)
+        else:
+            form = ExpenditureForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                return redirect('accountant_expenditure_list')  # Adjust the redirect to match your URL name
+            elif action == 'save_and_continue':
+                return redirect('accountant_add_expenditure')  # Adjust the redirect to match your URL name
+
+        return render(request, 'accountant_template/add_expenditure_form.html', {'form': form}) 
+    
+    
+class ClassFeeListView(ListView):
+    model = ClassFee
+    template_name = 'accountant_template/class_fee_list.html'
+    context_object_name = 'class_fees'
+    paginate_by = 10  # Adjust the number of items per page if needed
+
+    def get_queryset(self):
+        return ClassFee.objects.all().order_by('class_level', 'fee_type')
+    
+class ClassFeeDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        class_fee = get_object_or_404(ClassFee, pk=pk)
+        class_fee.delete()
+        return redirect('accountant_class_fee_list')      
+        
+class ClassFeeCreateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            class_fee = get_object_or_404(ClassFee, pk=pk)
+            form = ClassFeeForm(instance=class_fee)
+        else:
+            form = ClassFeeForm()
+
+        return render(request, 'accountant_template/add_class_fee_form.html', {'form': form})
+
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            class_fee = get_object_or_404(ClassFee, pk=pk)
+            form = ClassFeeForm(request.POST, instance=class_fee)
+        else:
+            form = ClassFeeForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                return redirect('accountant_class_fee_list')  # Adjust the redirect to match your URL name
+            elif action == 'save_and_continue':
+                return redirect('accountant_add_class_fee')  # Adjust the redirect to match your URL name
+
+        return render(request, 'accountant_template/add_class_fee_form.html', {'form': form})    
+    
+
+
+class MadrasatulFeeListView(ListView):
+    model = MadrasatulFee
+    template_name = 'accountant_template/madrasatul_fee_list.html'
+    context_object_name = 'fees'
+    paginate_by = 10  # Optional: to paginate the list if you have many records
+
+    def get_queryset(self):
+        return MadrasatulFee.objects.select_related('class_level').order_by('class_level', 'fee_amount')
+    
+class MadrasatulFeeDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        class_fee = get_object_or_404(MadrasatulFee, pk=pk)
+        class_fee.delete()
+        return redirect('accountant_madrasatul_fee_list')        
+    
+class MadrasatulFeeCreateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            fee = get_object_or_404(MadrasatulFee, pk=pk)
+            form = MadrasatulFeeForm(instance=fee)
+        else:
+            form = MadrasatulFeeForm()
+
+        return render(request, 'accountant_template/add_madrasatul_fee_form.html', {'form': form})
+
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            fee = get_object_or_404(MadrasatulFee, pk=pk)
+            form = MadrasatulFeeForm(request.POST, instance=fee)
+        else:
+            form = MadrasatulFeeForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                messages.success(request, 'Madrasatul Fee saved successfully!')
+                return redirect('accountant_madrasatul_fee_list')
+            elif action == 'save_and_continue':
+                messages.success(request, 'Madrasatul Fee saved successfully! You can add another fee.')
+                return redirect('accountant_madrasatul_fee_create')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+
+        return render(request, 'accountant_template/add_madrasatul_fee_form.html', {'form': form})    
+    
+    
+class TransportFeeListView(ListView):
+    model = TransportFee
+    template_name = 'accountant_template/transport_fee_list.html'
+    context_object_name = 'transport_fees'
+    paginate_by = 10  # Optional: to paginate the list if you have many records
+
+
+    
+class TransportFeeDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        class_fee = get_object_or_404(TransportFee, pk=pk)
+        class_fee.delete()
+        return redirect('accountant_transport_fee_list')          
+
+
+class TransportFeeCreateUpdateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            transport_fee = get_object_or_404(TransportFee, pk=pk)
+            form = TransportFeeForm(instance=transport_fee)
+            context = {
+                'form': form,
+                'is_edit': True
+            }
+        else:
+            form = TransportFeeForm()
+            context = {
+                'form': form,
+                'is_edit': False
+            }
+        return render(request, 'accountant_template/add_transport_fee_form.html', context)
+    
+    def post(self, request, pk=None, *args, **kwargs):
+        if pk:
+            transport_fee = get_object_or_404(TransportFee, pk=pk)
+            form = TransportFeeForm(request.POST, instance=transport_fee)
+        else:
+            form = TransportFeeForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                messages.success(request, 'Transport Fee has been saved successfully!')
+                return redirect('accountant_transport_fee_list')
+            elif action == 'save_and_continue':
+                messages.success(request, 'Transport Fee has been saved! You can add another one.')
+                return redirect('accountant_transport_fee_create')
+
+        context = {
+            'form': form,
+            'is_edit': pk is not None
+        }
+        return render(request, 'accountant_template/add_transport_fee_form.html', context)
+    
+
+@method_decorator(login_required, name='dispatch')
+class FeePaymentListView(ListView):
+    model = FeePayment
+    template_name = 'accountant_template/fee_payment_list.html'
+    context_object_name = 'fee_payments'
+    paginate_by = 10  # Adjust the number of items per page if needed
+
+    def get_queryset(self):
+        # Retrieve the current staff member and their branch
+        try:
+            current_staff = Staffs.objects.get(admin=self.request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            staff_branch = None
+
+        # Filter FeePayment based on the branch of the student's branch
+        if staff_branch:
+            return FeePayment.objects.filter(
+                student__branch=staff_branch
+            ).select_related('student', 'class_fee').order_by('-payment_date')
+        else:
+            return FeePayment.objects.none()  # Return no results if staff member is not found
+    
+
+class FeePaymentDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        fee_payment = get_object_or_404(FeePayment, pk=pk)
+        fee_payment.delete()
+        return redirect('accountant_fee_payment_list')  
+            
+  
+@method_decorator(login_required, name='dispatch')    
+class FeePaymentCreateUpdateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        try:
+            current_staff = Staffs.objects.get(admin=request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            return redirect('some_error_page')  # Replace with an appropriate error page
+
+        # Get students from the branch of the current staff
+        branch_students = Students.objects.filter(branch=staff_branch)
+
+        if pk:
+            fee_payment = get_object_or_404(FeePayment, pk=pk)
+            form = FeePaymentForm(instance=fee_payment, branch_students=branch_students)
+            context = {
+                'form': form,
+                'is_edit': True
+            }
+        else:
+            form = FeePaymentForm(branch_students=branch_students)
+            context = {
+                'form': form,
+                'is_edit': False
+            }
+        
+        return render(request, 'accountant_template/add_fee_payment_form.html', context)
+
+    def post(self, request, pk=None, *args, **kwargs):
+        try:
+            current_staff = Staffs.objects.get(admin=request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            return redirect('some_error_page')  # Replace with an appropriate error page
+
+        # Get students from the branch of the current staff
+        branch_students = Students.objects.filter(branch=staff_branch)
+
+        if pk:
+            fee_payment = get_object_or_404(FeePayment, pk=pk)
+            form = FeePaymentForm(request.POST, instance=fee_payment, branch_students=branch_students)
+        else:
+            form = FeePaymentForm(request.POST, branch_students=branch_students)
+
+        if form.is_valid():
+            fee_payment = form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                messages.success(request, 'Fee Payment has been saved successfully!')
+                return redirect('accountant_fee_payment_list')
+            elif action == 'save_and_continue':
+                messages.success(request, 'Fee Payment has been saved! You can add another one.')
+                return redirect('accountant_fee_payment_create')
+
+        context = {
+            'form': form,
+            'is_edit': pk is not None
+        }
+        return render(request, 'accountant_template/add_fee_payment_form.html', context)
+    
+
+@method_decorator(login_required, name='dispatch')
+class MadrasatulFeePaymentCreateUpdateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        try:
+            current_staff = Staffs.objects.get(admin=request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            return redirect('some_error_page')  # Replace with an appropriate error page
+
+        # Get students from the branch of the current staff
+        branch_students = Students.objects.filter(branch=staff_branch)
+
+        if pk:
+            madrasatul_fee_payment = get_object_or_404(MadrasatulFeePayment, pk=pk)
+            form = MadrasatulFeePaymentForm(instance=madrasatul_fee_payment, branch_students=branch_students)
+            context = {
+                'form': form,
+                'is_edit': True
+            }
+        else:
+            form = MadrasatulFeePaymentForm(branch_students=branch_students)
+            context = {
+                'form': form,
+                'is_edit': False
+            }
+        
+        return render(request, 'accountant_template/add_madrasatul_fee_payment_form.html', context)
+
+    def post(self, request, pk=None, *args, **kwargs):
+        try:
+            current_staff = Staffs.objects.get(admin=request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            return redirect('some_error_page')  # Replace with an appropriate error page
+
+        # Get students from the branch of the current staff
+        branch_students = Students.objects.filter(branch=staff_branch)
+
+        if pk:
+            madrasatul_fee_payment = get_object_or_404(MadrasatulFeePayment, pk=pk)
+            form = MadrasatulFeePaymentForm(request.POST, instance=madrasatul_fee_payment, branch_students=branch_students)
+        else:
+            form = MadrasatulFeePaymentForm(request.POST, branch_students=branch_students)
+
+        if form.is_valid():
+            fee_payment = form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                messages.success(request, 'Madrasatul Fee Payment has been saved successfully!')
+                return redirect('accountant_madrasatul_fee_payment_list')
+            elif action == 'save_and_continue':
+                messages.success(request, 'Madrasatul Fee Payment has been saved! You can add another one.')
+                return redirect('accountant_madrasatul_fee_payment_create')
+
+        context = {
+            'form': form,
+            'is_edit': pk is not None
+        }
+        return render(request, 'accountant_template/add_madrasatul_fee_payment_form.html', context)
+    
+
+@method_decorator(login_required, name='dispatch')
+class MadrasatulFeePaymentListView(ListView):
+    model = MadrasatulFeePayment
+    template_name = 'accountant_template/madrasatul_fee_payment_list.html'
+    context_object_name = 'fee_payments'
+    paginate_by = 10  # Optional: to paginate the list view
+
+    def get_queryset(self):
+        # Retrieve the current staff member and their branch
+        try:
+            current_staff = Staffs.objects.get(admin=self.request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            staff_branch = None
+
+        # Filter MadrasatulFeePayment based on the branch of the student's branch
+        if staff_branch:
+            return MadrasatulFeePayment.objects.filter(
+                student__branch=staff_branch
+            ).select_related('student').order_by('-payment_date')
+        else:
+            return MadrasatulFeePayment.objects.none()  # Return no results if staff member is not found
+    
+  
+    
+class MadrasatulFeePaymentDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        fee_payment = get_object_or_404(MadrasatulFeePayment, pk=pk)
+        fee_payment.delete()
+        return redirect('accountant_madrasatul_fee_payment_list')               
+
+@method_decorator(login_required, name='dispatch')    
+class TransportFeePaymentCreateUpdateView(View):
+    def get(self, request, pk=None, *args, **kwargs):
+        # Retrieve the current staff member and their branch
+        try:
+            current_staff = Staffs.objects.get(admin=request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            return redirect('some_error_page')  # Replace with an appropriate error page
+
+        # Get students from the branch of the current staff
+        branch_students = Students.objects.filter(branch=staff_branch)
+
+        if pk:
+            transport_fee_payment = get_object_or_404(TransportFeePayment, pk=pk)
+            form = TransportFeePaymentForm(instance=transport_fee_payment, branch_students=branch_students)
+            context = {
+                'form': form,
+                'is_edit': True
+            }
+        else:
+            form = TransportFeePaymentForm(branch_students=branch_students)
+            context = {
+                'form': form,
+                'is_edit': False
+            }
+        
+        return render(request, 'accountant_template/add_transport_fee_payment_form.html', context)
+
+    def post(self, request, pk=None, *args, **kwargs):
+        # Retrieve the current staff member and their branch
+        try:
+            current_staff = Staffs.objects.get(admin=request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            return redirect('some_error_page')  # Replace with an appropriate error page
+
+        # Get students from the branch of the current staff
+        branch_students = Students.objects.filter(branch=staff_branch)
+
+        if pk:
+            transport_fee_payment = get_object_or_404(TransportFeePayment, pk=pk)
+            form = TransportFeePaymentForm(request.POST, instance=transport_fee_payment, branch_students=branch_students)
+        else:
+            form = TransportFeePaymentForm(request.POST, branch_students=branch_students)
+
+        if form.is_valid():
+            transport_fee_payment = form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                messages.success(request, 'Transport Fee Payment has been saved successfully!')
+                return redirect('accountant_transport_fee_payment_list')
+            elif action == 'save_and_continue':
+                messages.success(request, 'Transport Fee Payment has been saved! You can add another one.')
+                return redirect('accountant_transport_fee_payment_create')
+
+        context = {
+            'form': form,
+            'is_edit': pk is not None
+        }
+        return render(request, 'accountant_template/add_transport_fee_payment_form.html', context)
+    
+@method_decorator(login_required, name='dispatch')
+class TransportFeePaymentListView(ListView):
+    model = TransportFeePayment
+    template_name = 'accountant_template/transport_fee_payment_list.html'
+    context_object_name = 'transport_fee_payments'
+    paginate_by = 10  # Optional: to paginate the list view
+
+    def get_queryset(self):
+        # Retrieve the current staff member and their branch
+        try:
+            current_staff = Staffs.objects.get(admin=self.request.user)
+            staff_branch = current_staff.branch
+        except Staffs.DoesNotExist:
+            staff_branch = None
+
+        # Filter TransportFeePayment based on the branch of the student's branch
+        if staff_branch:
+            return TransportFeePayment.objects.filter(
+                student__branch=staff_branch
+            ).select_related('student').order_by('-payment_date')
+        else:
+            return TransportFeePayment.objects.none()  # Return no results if staff member is not found    
+    
+class TransportFeePaymentDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        fee_payment = get_object_or_404(TransportFeePayment, pk=pk)
+        fee_payment.delete()
+        return redirect('accountant_transport_fee_payment_list')   
+    
+def get_subject_count_per_class_level(request):
+    data = Subject.objects.values('class_level__class_name').annotate(subject_count=models.Count('id'))
+    return JsonResponse(list(data), safe=False)  
+
+def fetch_students_per_class(request):
+    # Get the total number of students for each class level
+    class_levels = Students.objects.values('class_level__class_name').annotate(total_students=Count('id'))
+    
+    # Prepare data for JSON response
+    labels = [item['class_level__class_name'] for item in class_levels]
+    data = [item['total_students'] for item in class_levels]
+    
+    return JsonResponse({
+        'labels': labels,
+        'data': data
+    })    
+             
+             
+@require_GET
+def get_madrasatul_fee_payment_monthly_data(request):
+    year = request.GET.get('year')
+
+    # Initialize monthly data dictionary
+    monthly_data_dict = {month: {'income': 0} for month in range(1, 13)}
+
+    # Retrieve the current staff member and their branch
+    try:
+        current_staff = Staffs.objects.get(admin=request.user)
+        staff_branch = current_staff.branch
+    except Staffs.DoesNotExist:
+        return JsonResponse({'error': 'Staff member not found'})
+
+    # Fetch monthly income data from MadrasatulFeePayment
+    madrasatul_fee_payment_data = MadrasatulFeePayment.objects.filter(
+        payment_date__year=year,
+        student__branch=staff_branch
+    ).values('payment_date__month').annotate(
+        income=Sum('amount_paid')
+    ).order_by('payment_date__month')
+
+    # Combine all data into the monthly_data_dict
+    for entry in madrasatul_fee_payment_data:
+        month = entry['payment_date__month']
+        monthly_data_dict[month]['income'] += entry['income']
+
+    # Prepare response data
+    response_data = [{'month': month, 'income': monthly_data_dict[month]['income']} for month in range(1, 13)]
+
+    return JsonResponse(response_data, safe=False)
+
+
+@require_GET
+def get_transport_fee_payment_monthly_data(request):
+    year = request.GET.get('year')
+
+    # Initialize monthly data dictionary
+    monthly_data_dict = {month: {'income': 0} for month in range(1, 13)}
+
+    # Retrieve the current staff member and their branch
+    try:
+        current_staff = Staffs.objects.get(admin=request.user)
+        staff_branch = current_staff.branch
+    except Staffs.DoesNotExist:
+        return JsonResponse({'error': 'Staff member not found'})
+
+    # Fetch monthly income data from TransportFeePayment
+    transport_fee_payment_data = TransportFeePayment.objects.filter(
+        payment_date__year=year,
+        student__branch=staff_branch
+    ).values('payment_date__month').annotate(
+        income=Sum('amount_paid')
+    ).order_by('payment_date__month')
+
+    # Combine all data into the monthly_data_dict
+    for entry in transport_fee_payment_data:
+        month = entry['payment_date__month']
+        monthly_data_dict[month]['income'] += entry['income']
+
+    # Prepare response data
+    response_data = [{'month': month, 'income': monthly_data_dict[month]['income']} for month in range(1, 13)]
+
+    return JsonResponse(response_data, safe=False)
+
+
+@require_GET
+def get_fee_payment_monthly_data(request):
+    year = request.GET.get('year')
+
+    # Initialize monthly data dictionary
+    monthly_data_dict = {month: {'income': 0} for month in range(1, 13)}
+
+    # Retrieve the current staff member and their branch
+    try:
+        current_staff = Staffs.objects.get(admin=request.user)
+        staff_branch = current_staff.branch
+    except Staffs.DoesNotExist:
+        return JsonResponse({'error': 'Staff member not found'})
+
+    # Fetch monthly income data from FeePayment
+    fee_payment_data = FeePayment.objects.filter(
+        payment_date__year=year,
+        student__branch=staff_branch
+    ).values('payment_date__month').annotate(
+        income=Sum('amount_paid')
+    ).order_by('payment_date__month')
+
+    # Combine all data into the monthly_data_dict
+    for entry in fee_payment_data:
+        month = entry['payment_date__month']
+        monthly_data_dict[month]['income'] += entry['income']
+
+    # Prepare response data
+    response_data = [{'month': month, 'income': monthly_data_dict[month]['income']} for month in range(1, 13)]
+
+    return JsonResponse(response_data, safe=False)

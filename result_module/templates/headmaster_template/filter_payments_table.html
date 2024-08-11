@@ -25,7 +25,7 @@
                 <td>{{ payment.payment_status }}</td>
                 <td>{{ payment.date_paid }}</td>
                 <td class="text-center">
-                    <a href="{% url 'admin_view_all_payments' payment.student_id %}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="View All Payments">
+                    <a href="{% url 'headmaster_view_all_payments' payment.student_id %}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="View All Payments">
                         <i class="fas fa-list"></i>
                     </a>
                 </td>
@@ -35,4 +35,4 @@
     </table>
 </div>
 
-  {% include 'hod_template/datatable.html' %}
+  {% include 'headmaster_template/datatable.html' %}

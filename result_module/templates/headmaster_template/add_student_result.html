@@ -1,0 +1,133 @@
+{% extends 'headmaster_template/base_template.html' %}
+
+{% block title %}
+    {% if is_edit %}
+        Edit Result
+    {% else %}
+        Add New Result
+    {% endif %}
+{% endblock title %}
+
+{% block main_content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                    <!-- Student Personal Details Card -->
+            <div class="card  card-primary">
+                <div class="card-header">Student Personal Details</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Registration Number:</strong> {{ student.registration_number }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Full Name:</strong> {{ student.full_name }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Current Class:</strong> {{ student.class_level }}
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <strong>Date of Birth:</strong> {{ student.date_of_birth }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Gender:</strong> {{ student.gender }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Phone Number:</strong> {{ student.first_phone_number }}
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <strong>Address:</strong> {{ student.address }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            {% if is_edit %}
+                                Edit Result
+                            {% else %}
+                                Add New Result
+                            {% endif %}
+                        </h3>
+                    </div>
+                    <div class="container-fluid">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{ form.non_field_errors }}
+                            <div class="form-row">
+                                <!-- Subject Field -->
+                                <div class="col-md-4 mb-3">
+                                    {{ form.subject.label_tag }}
+                                    {{ form.subject }}
+                                    {% if form.subject.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ form.subject.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <!-- Marks Field -->
+                                <div class="col-md-4 mb-3">
+                                    {{ form.marks.label_tag }}
+                                    {{ form.marks }}
+                                    {% if form.marks.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ form.marks.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <!-- Date of Exam Field -->
+                                <div class="col-md-4 mb-3">
+                                    {{ form.date_of_exam.label_tag }}
+                                    {{ form.date_of_exam }}
+                                    {% if form.date_of_exam.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ form.date_of_exam.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <!-- Form Buttons -->
+                            <div class="card-footer">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button type="submit" name="action" value="save" class="btn btn-primary btn-block">
+                                            Save
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button type="submit" name="action" value="save_and_continue" class="btn btn-secondary btn-block">
+                                            Save and Add Another
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Displaying Messages -->
+                            <div class="form-group mt-3">
+                                {% if messages %}
+                                    <div class="col-12">
+                                        {% for message in messages %}
+                                            {% if message.tags == 'error' %}
+                                                <div class="alert alert-danger">{{ message }}</div>
+                                            {% elif message.tags == 'success' %}
+                                                <div class="alert alert-primary">{{ message }}</div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock main_content %}
