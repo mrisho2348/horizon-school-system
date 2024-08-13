@@ -12,8 +12,8 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView
 from django.views.decorators.http import require_GET,require_POST
-from result_module.forms import AddStaffForm, ClassFeeForm, ClassLevelForm, EditStaffForm, ExpenditureForm, FeePaymentForm, FeeStructureForm, MadrasatulFeeForm, MadrasatulFeePaymentForm, ResultForm, SchoolFeesInstallmentForm, StudentForm, StudentResultForm, SubjectForm, TransportFeeForm, TransportFeePaymentForm
-from result_module.models import AdminHOD,  ClassAttendance, ClassFee, ClassLevel, CustomUser, ExamMetrics, ExamType, Expenditure, FeePayment, FeeStructure, FeedBackStaff,  LeaveReportStaffs, MadrasatulFee, MadrasatulFeePayment,  Result, SchoolFeesInstallment, SchoolFeesPayment,  Staffs, StudentClassAttendance, StudentExamInfo, StudentPositionInfo, Students, Subject, SujbectWiseResults, TransportFee, TransportFeePayment
+from result_module.forms import AddStaffForm, ClassFeeForm, ClassLevelForm, EditStaffForm, ExpenditureForm, FeePaymentForm, FeeStructureForm, MadrasatulFeeForm, MadrasatulFeePaymentForm, ResultForm, SchoolFeesInstallmentForm, ServiceForm, StudentForm, StudentResultForm, SubjectForm, TransportFeeForm, TransportFeePaymentForm
+from result_module.models import AdminHOD,  ClassAttendance, ClassFee, ClassLevel, CustomUser, ExamMetrics, ExamType, Expenditure, FeePayment, FeeStructure, FeedBackStaff,  LeaveReportStaffs, MadrasatulFee, MadrasatulFeePayment,  Result, SchoolFeesInstallment, SchoolFeesPayment, Service,  Staffs, StudentClassAttendance, StudentExamInfo, StudentPositionInfo, Students, Subject, SujbectWiseResults, TransportFee, TransportFeePayment
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
@@ -894,7 +894,7 @@ def update_student_status(request):
         messages.error(request, f'An error occurred: {str(e)}')
 
     # Redirect back to the staff list page
-    return redirect('manage_student')  # Make sure 'manage_staffs' is the name of your staff list URL
+    return redirect('admin_manage_student')  # Make sure 'manage_staffs' is the name of your staff list URL
 
 
 
@@ -2173,15 +2173,19 @@ class FeePaymentCreateUpdateView(View):
 
 class MadrasatulFeePaymentCreateUpdateView(View):
     def get(self, request, pk=None, *args, **kwargs):
+        # Get the 'Madrasatul' service
+        madrasatul_service = Service.objects.get(name='Madrasatul')
+        branch_students = Students.objects.filter(branch=request.user.branch, services=madrasatul_service)
+
         if pk:
             madrasatul_fee_payment = get_object_or_404(MadrasatulFeePayment, pk=pk)
-            form = MadrasatulFeePaymentForm(instance=madrasatul_fee_payment)
+            form = MadrasatulFeePaymentForm(instance=madrasatul_fee_payment, branch_students=branch_students)
             context = {
                 'form': form,
                 'is_edit': True
             }
         else:
-            form = MadrasatulFeePaymentForm()
+            form = MadrasatulFeePaymentForm(branch_students=branch_students)
             context = {
                 'form': form,
                 'is_edit': False
@@ -2189,11 +2193,15 @@ class MadrasatulFeePaymentCreateUpdateView(View):
         return render(request, 'hod_template/add_madrasatul_fee_payment_form.html', context)
     
     def post(self, request, pk=None, *args, **kwargs):
+        # Get the 'Madrasatul' service
+        madrasatul_service = Service.objects.get(name='Madrasatul')
+        branch_students = Students.objects.filter(branch=request.user.staffs.branch, services=madrasatul_service)
+
         if pk:
             madrasatul_fee_payment = get_object_or_404(MadrasatulFeePayment, pk=pk)
-            form = MadrasatulFeePaymentForm(request.POST, instance=madrasatul_fee_payment)
+            form = MadrasatulFeePaymentForm(request.POST, instance=madrasatul_fee_payment, branch_students=branch_students)
         else:
-            form = MadrasatulFeePaymentForm(request.POST)
+            form = MadrasatulFeePaymentForm(request.POST, branch_students=branch_students)
 
         if form.is_valid():
             fee_payment = form.save()
@@ -2209,7 +2217,7 @@ class MadrasatulFeePaymentCreateUpdateView(View):
             'form': form,
             'is_edit': pk is not None
         }
-        return render(request, 'hod_template/add_madrasatul_fee_payment_form.html', context)  
+        return render(request, 'hod_template/add_madrasatul_fee_payment_form.html', context)
     
 
 class MadrasatulFeePaymentListView(ListView):
@@ -2329,7 +2337,58 @@ class ResultCreateUpdateView(View):
         context = {'form': form, 'is_edit': pk is not None}
         return render(request, 'hod_template/add_manage_result.html', context)
     
+    
+class ServiceCreateUpdateView(CreateView, UpdateView):
+    model = Service
+    form_class = ServiceForm
+    template_name = 'hod_template/add_service_form.html'
+    success_url = reverse_lazy('admin_service_list')
 
+    def get_object(self, queryset=None):
+        """
+        Determine if we are working with an existing object (Update) or creating a new one.
+        """
+        pk = self.kwargs.get('pk')
+        if pk:
+            return get_object_or_404(Service, pk=pk)
+        return None  # For CreateView, there is no object
+
+    def form_valid(self, form):
+        """
+        Handle the form submission when the form is valid.
+        Saves the service object and determines the next action based on the button clicked.
+        """
+        self.object = form.save()  # Save the form instance and get the object
+
+        action = self.request.POST.get('action')  # Get the action from the submitted form
+        if action == 'save':
+            messages.success(self.request, 'Service saved successfully!')
+            return redirect(self.success_url)  # Redirect to the service list
+        elif action == 'save_and_continue':
+            messages.success(self.request, 'Service saved! You can add another one.')
+            return redirect('admin_service_add')  # Redirect to add another service
+
+    def get_context_data(self, **kwargs):
+        """
+        Add extra context data to the template.
+        Includes a flag `is_edit` to determine if the form is for editing an existing service.
+        """
+        context = super().get_context_data(**kwargs)
+        context['is_edit'] = self.object is not None  # Check if editing
+        return context
+
+class ServiceListView(ListView):
+    model = Service
+    template_name = 'hod_template/service_list.html'
+    context_object_name = 'services'
+    
+
+class ServiceDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        service = get_object_or_404(Service, pk=pk)
+        service.delete()
+        return redirect('admin_service_list') 
+        
 class StudentResultCreateUpdateView(CreateView, UpdateView):
     model = Result
     form_class = StudentResultForm

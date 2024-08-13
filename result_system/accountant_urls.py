@@ -5,6 +5,13 @@ urlpatterns = [
     # Accountant home page
     path('accountant/home/', AccountantViews.accountant_home, name='accountant_home'),
     path('update_payment/', AccountantViews.update_payment, name='accountant_update_payment'),
+    path('update_student_status/', AccountantViews.update_student_status, name='accountant_update_student_status'),
+    path('student_general_attendance/<int:student_id>/', AccountantViews.student_general_attendance, name='accountant_student_general_attendance'),
+    path('student/<int:id>/', AccountantViews.student_details, name='accountant_student_details'),
+    path('add_student/', AccountantViews.add_or_edit_student, name='accountant_add_student'),
+    path('edit_student/<int:pk>/', AccountantViews.add_or_edit_student, name='accountant_edit_student'),
+    path('student_subject_wise_result_page/<int:student_id>/', AccountantViews.student_subject_wise_result_page, name='accountant_student_subject_wise_result_page'),
+    path('students/', AccountantViews.manage_student, name='accountant_manage_student'),  
     # Accountant leave application URLs
     path('accountant/leave/apply/', AccountantViews.staff_apply_leave, name='accountant_staff_apply_leave'),
     path('accountant/leave/apply/save/', AccountantViews.staff_apply_leave_save, name='accountant_staff_apply_leave_save'),
@@ -46,7 +53,7 @@ urlpatterns = [
     path('expenditure/add/', AccountantViews.ExpenditureCreateView.as_view(), name='accountant_add_expenditure'),
     path('expenditure/<int:pk>/edit/', AccountantViews.ExpenditureCreateView.as_view(), name='accountant_edit_expenditure'),
     path('expenditure/<int:pk>/delete/', AccountantViews.ExpenditureDeleteView.as_view(), name='accountant_delete_expenditure'),
-    
+    path('error/', AccountantViews.ErrorPageView.as_view(), name='accountant_error_page'),
     path('class_fees/', AccountantViews.ClassFeeListView.as_view(), name='accountant_class_fee_list'),
     path('class_fee/add/', AccountantViews.ClassFeeCreateView.as_view(), name='accountant_add_class_fee'),
     path('class_fee/<int:pk>/edit/', AccountantViews.ClassFeeCreateView.as_view(), name='accountant_edit_class_fee'),

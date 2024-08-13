@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="alert alert-danger">
+            <h4 class="alert-heading">Something went wrong!</h4>
+            <p>We encountered an unexpected error. Please try again later or contact support if the problem persists.</p>
+            <hr>
+            <a href="{% url 'home' %}" class="btn btn-primary">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>

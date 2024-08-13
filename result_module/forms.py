@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
-from result_module.models import ClassFee, ClassLevel, CustomUser, Expenditure, FeePayment, FeeStructure, MadrasatulFee, MadrasatulFeePayment, Result, SchoolFeesInstallment,  Staffs, Students, Subject, TransportFee, TransportFeePayment
+from result_module.models import ClassFee, ClassLevel, CustomUser, Expenditure, FeePayment, FeeStructure, MadrasatulFee, MadrasatulFeePayment, Result, SchoolFeesInstallment, Service,  Staffs, Students, Subject, TransportFee, TransportFeePayment
 from django.db.models import Q
 from django.utils.timezone import now
 import pandas as pd
@@ -490,16 +490,33 @@ class FeePaymentForm(forms.ModelForm):
         class_fee = cleaned_data.get('class_fee')
         amount_paid = cleaned_data.get('amount_paid')
 
-        # Validate that the class_fee corresponds to the student's class level
         if student and class_fee:
             student_class_level = student.class_level
             fee_class_level = class_fee.class_level
 
+            # Check if the class_fee corresponds to the student's class level
             if student_class_level != fee_class_level:
                 self.add_error('class_fee', f'The selected fee does not correspond with the student\'s class level ({student_class_level}).')
 
-        # Validate that the amount paid does not exceed the required amount
-        if class_fee and amount_paid:
+            # Get the Boarding service
+            try:
+                boarding_service = Service.objects.get(name='Boarding')
+            except Service.DoesNotExist:
+                self.add_error('class_fee', 'Boarding service is not configured in the system.')
+                return cleaned_data
+
+            # Check if the class fee type is 'Boarding'
+            if class_fee.fee_type == 'Boarding':
+                # Validate if the student is enrolled in the Boarding service
+                if boarding_service not in student.services.all():
+                    self.add_error('class_fee', 'The student is not enrolled in the Boarding service and cannot make a payment for Boarding.')
+
+            # If the fee type is not Boarding, continue with other validations (if any)
+            else:
+                # Any additional logic for other fee types can go here
+                pass
+
+            # Validate that the amount paid does not exceed the required fee amount
             total_required = class_fee.fee_amount
             if amount_paid > total_required:
                 self.add_error('amount_paid', f'The amount paid ({amount_paid}) exceeds the required fee ({total_required}). Please adjust the amount.')
@@ -518,11 +535,25 @@ class MadrasatulFeePaymentForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        branch_students = kwargs.pop('branch_students', None)
-        super().__init__(*args, **kwargs)
-        
-        if branch_students is not None:
-            self.fields['student'].queryset = branch_students
+        try:
+            branch_students = kwargs.pop('branch_students', None)
+            super().__init__(*args, **kwargs)
+
+            # Get the 'Madrasatul' service
+            madrasatul_service = Service.objects.get(name='Madrasa')
+            
+            if branch_students is not None:
+                self.fields['student'].queryset = branch_students.filter(services=madrasatul_service)
+            else:
+                self.fields['student'].queryset = Students.objects.filter(services=madrasatul_service)
+        except Service.DoesNotExist:
+            # Handle the case where the 'Madrasatul' service does not exist
+            self.fields['student'].queryset = Students.objects.none()
+            self.add_error(None, 'The Madrasatul service does not exist. Please contact the administrator.')
+        except Exception as e:
+            # Handle any other exceptions
+            self.fields['student'].queryset = Students.objects.none()
+            self.add_error(None, f'An unexpected error occurred: {str(e)}')
 
     def clean(self):
         cleaned_data = super().clean()
@@ -530,19 +561,25 @@ class MadrasatulFeePaymentForm(forms.ModelForm):
         matrasatul_fee = cleaned_data.get('matrasatul_fee')
         amount_paid = cleaned_data.get('amount_paid')
 
-        if student and matrasatul_fee:
-            student_class_level = student.class_level
-            fee_class_level = matrasatul_fee.class_level
+        try:
+            if student and matrasatul_fee:
+                student_class_level = student.class_level
+                fee_class_level = matrasatul_fee.class_level
 
-            if student_class_level != fee_class_level:
-                self.add_error('matrasatul_fee', f'The selected fee does not correspond with the student\'s class level ({student_class_level}).')
+                if student_class_level != fee_class_level:
+                    self.add_error('matrasatul_fee', f'The selected fee does not correspond with the student\'s class level ({student_class_level}).')
 
-        if matrasatul_fee and amount_paid:
-            total_required = matrasatul_fee.fee_amount
-            if amount_paid > total_required:
-                self.add_error('amount_paid', f'The amount paid ({amount_paid}) exceeds the required fee ({total_required}). Please adjust the amount.')
+            if matrasatul_fee and amount_paid:
+                total_required = matrasatul_fee.fee_amount
+                if amount_paid > total_required:
+                    self.add_error('amount_paid', f'The amount paid ({amount_paid}) exceeds the required fee ({total_required}). Please adjust the amount.')
+        
+        except Exception as e:
+            # Handle any other exceptions during validation
+            self.add_error(None, f'An unexpected error occurred during validation: {str(e)}')
 
         return cleaned_data
+
     
 class TransportFeePaymentForm(forms.ModelForm):
     class Meta:
@@ -559,8 +596,22 @@ class TransportFeePaymentForm(forms.ModelForm):
         branch_students = kwargs.pop('branch_students', None)
         super().__init__(*args, **kwargs)
         
-        if branch_students is not None:
-            self.fields['student'].queryset = branch_students
+        try:
+            # Get the 'Transport' service
+            transport_service = Service.objects.get(name='Transport')
+            
+            if branch_students is not None:
+                self.fields['student'].queryset = branch_students.filter(services=transport_service)
+            else:
+                self.fields['student'].queryset = Students.objects.filter(services=transport_service)
+        except Service.DoesNotExist:
+            # Handle the case where the 'Transport' service does not exist
+            self.fields['student'].queryset = Students.objects.none()
+            self.add_error(None, 'The Transport service does not exist. Please contact the administrator.')
+        except Exception as e:
+            # Handle any other exceptions
+            self.fields['student'].queryset = Students.objects.none()
+            self.add_error(None, f'An unexpected error occurred: {str(e)}')
 
     def clean(self):
         cleaned_data = super().clean()
@@ -665,3 +716,14 @@ class StudentResultForm(forms.ModelForm):
             raise forms.ValidationError("Marks must be between 0 and 100.")
         
         return cleaned_data
+    
+class ServiceForm(forms.ModelForm):
+    class Meta:
+        model = Service
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter service name',
+            }),
+        }    

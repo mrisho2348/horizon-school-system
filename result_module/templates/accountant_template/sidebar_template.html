@@ -61,7 +61,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    {% url 'accountant_student_list' as student_list_url %}
+                    {% url 'accountant_manage_student' as student_list_url %}
                     <a href="{{ student_list_url }}" class="nav-link {% if request.path == student_list_url %} active {% endif %}">
                         <i class="nav-icon fas fa-user-graduate"></i>
                         <p>Students List</p>

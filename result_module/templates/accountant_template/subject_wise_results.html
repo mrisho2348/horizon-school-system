@@ -1,0 +1,146 @@
+{% extends 'accountant_template/base_template.html' %}
+
+{% block title %}
+    Student Results
+{% endblock title %}
+
+{% block main_content %}
+<div class="container-fluid">
+
+    <!-- Student Personal Details Section -->
+    <div class="card">
+        <div class="card-header">Student Personal Details</div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Registration Number -->
+                <div class="col-md-4">
+                    <strong>Registration Number:</strong> {{ student.registration_number }}
+                </div>
+                <!-- Full Name -->
+                <div class="col-md-4">
+                    <strong>Full Name:</strong> {{ student.full_name }}
+                </div>
+                <!-- Current Class -->
+                <div class="col-md-4">
+                    <strong>Current Class:</strong> {{ student.class_level }}
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <!-- Date of Birth -->
+                <div class="col-md-4">
+                    <strong>Date of Birth:</strong> {{ student.date_of_birth }}
+                </div>
+                <!-- Gender -->
+                <div class="col-md-4">
+                    <strong>Gender:</strong> {{ student.gender }}
+                </div>
+                <!-- Phone Number -->
+                <div class="col-md-4">
+                    <strong>Phone Number:</strong> {{ student.first_phone_number }}
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <!-- Address -->
+                <div class="col-md-12">
+                    <strong>Address:</strong> {{ student.address }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Results Search and Display Section -->
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+
+            <!-- Card for Search Form and Results Table -->
+            <div class="card">
+                <div class="card-header">Search Results</div>
+                <div class="card-body">
+                    
+                    <!-- Search Form -->
+                    <div class="container-fluid mt-5">
+                        <form id="search-form">
+                            {% csrf_token %}
+                            <div class="row">
+                                <!-- Hidden Field for Student ID -->
+                                <input type="hidden" id="student_id" name="student_id" value="{{ student.id }}" readonly/>
+                                
+                                <!-- Dropdown for Selecting Exam Type -->
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="exam_type_id">Select Exam Type:</label>
+                                        <select class="form-control select2bs4" id="exam_type_id" name="exam_type_id" style="width: 100%;">
+                                            {% for exam_type in exam_types %}
+                                                <option value="{{ exam_type.id }}">{{ exam_type.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Dropdown for Selecting Year -->
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="year">Select Year:</label>
+                                        <select class="form-control select2bs4" id="year" name="year" style="width: 100%;">
+                                            {% for date in distinct_dates %}
+                                                <option value="{{ date|date:'Y-m-d' }}">{{ date|date:'Y-m-d' }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Search Button -->
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>&nbsp;</label>
+                                        <button type="submit" class="btn btn-primary form-control">Search</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Container for the Result Table -->
+                    <div id="result-table-container"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to Handle Form Submission and AJAX Request -->
+<script>
+$(document).ready(function() {
+    // AJAX Form Submission
+    $('#search-form').submit(function(event) {
+        // Prevent default form submission
+        event.preventDefault();
+        
+        // Serialize the form data
+        var formData = $(this).serialize();
+        
+        // Send AJAX request to fetch student results
+        $.ajax({
+            type: 'POST',
+            url: '{% url "admin_student_subject_wise_result" %}',
+            data: formData,
+            success: function(response) {
+                // Update the result table container with fetched data
+                $('#result-table-container').html(response.html_result);
+            },
+            error: function(xhr, status, error) {
+                // Handle any errors that occur
+                console.error(xhr.responseText);
+            }
+        });
+    });
+});
+</script>
+
+{% endblock main_content %}

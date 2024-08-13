@@ -13,6 +13,7 @@ from django.db.models import Q
 from django.views.generic import ListView
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count
+from django.views.generic import TemplateView
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET,require_POST
@@ -20,20 +21,24 @@ from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from result_module.forms import ClassFeeForm, ExpenditureForm, FeePaymentForm, FeeStructureForm, MadrasatulFeeForm, MadrasatulFeePaymentForm, TransportFeeForm, TransportFeePaymentForm
+from result_module.forms import ClassFeeForm, ExpenditureForm, FeePaymentForm, FeeStructureForm, MadrasatulFeeForm, MadrasatulFeePaymentForm, StudentForm, TransportFeeForm, TransportFeePaymentForm
 from result_module.models import (
     ClassFee,
     ClassLevel,
+    ExamType,
     Expenditure,
     FeePayment,
     FeeStructure,
     FeedBackStaff,
     LeaveReportStaffs,
     MadrasatulFee,
-    MadrasatulFeePayment,   
+    MadrasatulFeePayment,
+    Result,   
     SchoolFeesInstallment,
-    SchoolFeesPayment,   
+    SchoolFeesPayment,
+    Service,   
     Staffs,
+    StudentClassAttendance,
     Students,
     Subject,
     TransportFee,
@@ -1298,7 +1303,7 @@ class FeePaymentCreateUpdateView(View):
             current_staff = Staffs.objects.get(admin=request.user)
             staff_branch = current_staff.branch
         except Staffs.DoesNotExist:
-            return redirect('some_error_page')  # Replace with an appropriate error page
+            return redirect('accountant_error_page')  # Replace with an appropriate error page
 
         # Get students from the branch of the current staff
         branch_students = Students.objects.filter(branch=staff_branch)
@@ -1324,7 +1329,7 @@ class FeePaymentCreateUpdateView(View):
             current_staff = Staffs.objects.get(admin=request.user)
             staff_branch = current_staff.branch
         except Staffs.DoesNotExist:
-            return redirect('some_error_page')  # Replace with an appropriate error page
+            return redirect('accountant_error_page')  # Replace with an appropriate error page
 
         # Get students from the branch of the current staff
         branch_students = Students.objects.filter(branch=staff_branch)
@@ -1356,55 +1361,60 @@ class FeePaymentCreateUpdateView(View):
 class MadrasatulFeePaymentCreateUpdateView(View):
     def get(self, request, pk=None, *args, **kwargs):
         try:
-            current_staff = Staffs.objects.get(admin=request.user)
-            staff_branch = current_staff.branch
-        except Staffs.DoesNotExist:
-            return redirect('some_error_page')  # Replace with an appropriate error page
+            # Get the 'Madrasatul' service
+            madrasatul_service = Service.objects.get(name='Madrasa')
+            branch_students = Students.objects.filter(branch=request.user.staffs.branch, services=madrasatul_service)
+            
+            if pk:
+                madrasatul_fee_payment = get_object_or_404(MadrasatulFeePayment, pk=pk)
+                form = MadrasatulFeePaymentForm(instance=madrasatul_fee_payment, branch_students=branch_students)
+                context = {
+                    'form': form,
+                    'is_edit': True
+                }
+            else:
+                form = MadrasatulFeePaymentForm(branch_students=branch_students)
+                context = {
+                    'form': form,
+                    'is_edit': False
+                }
+        except Service.DoesNotExist:
+            messages.error(request, 'The specified service does not exist.')
+            return redirect('accountant_madrasatul_fee_payment_list')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
+            return redirect('accountant_madrasatul_fee_payment_list')
 
-        # Get students from the branch of the current staff
-        branch_students = Students.objects.filter(branch=staff_branch)
-
-        if pk:
-            madrasatul_fee_payment = get_object_or_404(MadrasatulFeePayment, pk=pk)
-            form = MadrasatulFeePaymentForm(instance=madrasatul_fee_payment, branch_students=branch_students)
-            context = {
-                'form': form,
-                'is_edit': True
-            }
-        else:
-            form = MadrasatulFeePaymentForm(branch_students=branch_students)
-            context = {
-                'form': form,
-                'is_edit': False
-            }
-        
         return render(request, 'accountant_template/add_madrasatul_fee_payment_form.html', context)
-
+    
     def post(self, request, pk=None, *args, **kwargs):
         try:
-            current_staff = Staffs.objects.get(admin=request.user)
-            staff_branch = current_staff.branch
-        except Staffs.DoesNotExist:
-            return redirect('some_error_page')  # Replace with an appropriate error page
+            # Get the 'Madrasatul' service
+            madrasatul_service = Service.objects.get(name='Madrasa')
+            branch_students = Students.objects.filter(branch=request.user.staffs.branch, services=madrasatul_service)
+            
+            if pk:
+                madrasatul_fee_payment = get_object_or_404(MadrasatulFeePayment, pk=pk)
+                form = MadrasatulFeePaymentForm(request.POST, instance=madrasatul_fee_payment, branch_students=branch_students)
+            else:
+                form = MadrasatulFeePaymentForm(request.POST, branch_students=branch_students)
 
-        # Get students from the branch of the current staff
-        branch_students = Students.objects.filter(branch=staff_branch)
-
-        if pk:
-            madrasatul_fee_payment = get_object_or_404(MadrasatulFeePayment, pk=pk)
-            form = MadrasatulFeePaymentForm(request.POST, instance=madrasatul_fee_payment, branch_students=branch_students)
-        else:
-            form = MadrasatulFeePaymentForm(request.POST, branch_students=branch_students)
-
-        if form.is_valid():
-            fee_payment = form.save()
-            action = request.POST.get('action')
-            if action == 'save':
-                messages.success(request, 'Madrasatul Fee Payment has been saved successfully!')
-                return redirect('accountant_madrasatul_fee_payment_list')
-            elif action == 'save_and_continue':
-                messages.success(request, 'Madrasatul Fee Payment has been saved! You can add another one.')
-                return redirect('accountant_madrasatul_fee_payment_create')
+            if form.is_valid():
+                fee_payment = form.save()
+                action = request.POST.get('action')
+                if action == 'save':
+                    messages.success(request, 'Madrasatul Fee Payment has been saved successfully!')
+                    return redirect('accountant_madrasatul_fee_payment_list')
+                elif action == 'save_and_continue':
+                    messages.success(request, 'Madrasatul Fee Payment has been saved! You can add another one.')
+                    return redirect('accountant_madrasatul_fee_payment_create')
+            
+        except Service.DoesNotExist:
+            messages.error(request, 'The specified service does not exist.')
+            return redirect('accountant_madrasatul_fee_payment_list')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
+            return redirect('accountant_madrasatul_fee_payment_list')
 
         context = {
             'form': form,
@@ -1444,67 +1454,91 @@ class MadrasatulFeePaymentDeleteView(View):
         fee_payment.delete()
         return redirect('accountant_madrasatul_fee_payment_list')               
 
-@method_decorator(login_required, name='dispatch')    
+@method_decorator(login_required, name='dispatch')
 class TransportFeePaymentCreateUpdateView(View):
     def get(self, request, pk=None, *args, **kwargs):
-        # Retrieve the current staff member and their branch
         try:
+            # Retrieve the current staff member and their branch
             current_staff = Staffs.objects.get(admin=request.user)
             staff_branch = current_staff.branch
+
+            # Get the 'Transport' service
+            transport_service = Service.objects.get(name='Transport')
+            
+            # Get students from the branch of the current staff who are enrolled in the 'Transport' service
+            branch_students = Students.objects.filter(branch=staff_branch, services=transport_service)
+
+            if pk:
+                transport_fee_payment = get_object_or_404(TransportFeePayment, pk=pk)
+                form = TransportFeePaymentForm(instance=transport_fee_payment, branch_students=branch_students)
+                context = {
+                    'form': form,
+                    'is_edit': True
+                }
+            else:
+                form = TransportFeePaymentForm(branch_students=branch_students)
+                context = {
+                    'form': form,
+                    'is_edit': False
+                }
+            
+            return render(request, 'accountant_template/add_transport_fee_payment_form.html', context)
+
         except Staffs.DoesNotExist:
-            return redirect('some_error_page')  # Replace with an appropriate error page
-
-        # Get students from the branch of the current staff
-        branch_students = Students.objects.filter(branch=staff_branch)
-
-        if pk:
-            transport_fee_payment = get_object_or_404(TransportFeePayment, pk=pk)
-            form = TransportFeePaymentForm(instance=transport_fee_payment, branch_students=branch_students)
-            context = {
-                'form': form,
-                'is_edit': True
-            }
-        else:
-            form = TransportFeePaymentForm(branch_students=branch_students)
-            context = {
-                'form': form,
-                'is_edit': False
-            }
-        
-        return render(request, 'accountant_template/add_transport_fee_payment_form.html', context)
+            return redirect('accountant_error_page')  # Replace with an appropriate error page
+        except Service.DoesNotExist:
+            return redirect('accountant_error_page')  # Replace with an appropriate error page
+        except Exception as e:
+            # Handle any other exceptions
+            messages.error(request, f'An unexpected error occurred: {str(e)}')
+            return redirect('accountant_error_page')  # Replace with an appropriate error page
 
     def post(self, request, pk=None, *args, **kwargs):
-        # Retrieve the current staff member and their branch
         try:
+            # Retrieve the current staff member and their branch
             current_staff = Staffs.objects.get(admin=request.user)
             staff_branch = current_staff.branch
+
+            # Get the 'Transport' service
+            transport_service = Service.objects.get(name='Transport')
+            
+            # Get students from the branch of the current staff who are enrolled in the 'Transport' service
+            branch_students = Students.objects.filter(branch=staff_branch, services=transport_service)
+
+            if pk:
+                transport_fee_payment = get_object_or_404(TransportFeePayment, pk=pk)
+                form = TransportFeePaymentForm(request.POST, instance=transport_fee_payment, branch_students=branch_students)
+            else:
+                form = TransportFeePaymentForm(request.POST, branch_students=branch_students)
+
+            if form.is_valid():
+                transport_fee_payment = form.save()
+                action = request.POST.get('action')
+                if action == 'save':
+                    messages.success(request, 'Transport Fee Payment has been saved successfully!')
+                    return redirect('accountant_transport_fee_payment_list')
+                elif action == 'save_and_continue':
+                    messages.success(request, 'Transport Fee Payment has been saved! You can add another one.')
+                    return redirect('accountant_transport_fee_payment_create')
+
+            context = {
+                'form': form,
+                'is_edit': pk is not None
+            }
+            return render(request, 'accountant_template/add_transport_fee_payment_form.html', context)
+        
         except Staffs.DoesNotExist:
-            return redirect('some_error_page')  # Replace with an appropriate error page
+            return redirect('accountant_error_page')  # Replace with an appropriate error page
+        except Service.DoesNotExist:
+            return redirect('accountant_error_page')  # Replace with an appropriate error page
+        except Exception as e:
+            # Handle any other exceptions
+            messages.error(request, f'An unexpected error occurred: {str(e)}')
+            return redirect('accountant_error_page')  # Replace with an appropriate error page
+        
 
-        # Get students from the branch of the current staff
-        branch_students = Students.objects.filter(branch=staff_branch)
-
-        if pk:
-            transport_fee_payment = get_object_or_404(TransportFeePayment, pk=pk)
-            form = TransportFeePaymentForm(request.POST, instance=transport_fee_payment, branch_students=branch_students)
-        else:
-            form = TransportFeePaymentForm(request.POST, branch_students=branch_students)
-
-        if form.is_valid():
-            transport_fee_payment = form.save()
-            action = request.POST.get('action')
-            if action == 'save':
-                messages.success(request, 'Transport Fee Payment has been saved successfully!')
-                return redirect('accountant_transport_fee_payment_list')
-            elif action == 'save_and_continue':
-                messages.success(request, 'Transport Fee Payment has been saved! You can add another one.')
-                return redirect('accountant_transport_fee_payment_create')
-
-        context = {
-            'form': form,
-            'is_edit': pk is not None
-        }
-        return render(request, 'accountant_template/add_transport_fee_payment_form.html', context)
+class ErrorPageView(TemplateView):
+    template_name = 'accountant_template/accountant_error_page.html'        
     
 @method_decorator(login_required, name='dispatch')
 class TransportFeePaymentListView(ListView):
@@ -1650,3 +1684,135 @@ def get_fee_payment_monthly_data(request):
     response_data = [{'month': month, 'income': monthly_data_dict[month]['income']} for month in range(1, 13)]
 
     return JsonResponse(response_data, safe=False)
+
+
+@login_required
+def student_subject_wise_result_page(request,student_id): 
+    student = Students.objects.get(id=student_id)
+    exam_types = ExamType.objects.all()
+    distinct_dates= Result.objects.order_by('date_of_exam').values_list('date_of_exam', flat=True).distinct()
+    print(distinct_dates)
+    return render(request, 'accountant_template/subject_wise_results.html',
+                  {
+                      'student': student,
+                      'exam_types': exam_types,
+                      'distinct_dates': distinct_dates,
+                   })
+    
+@login_required
+def student_general_attendance(request, student_id):
+    try:
+        if student_id:
+            student_object = Students.objects.get(id=student_id)
+        else:
+            # Redirect to the student login page if not logged in
+            return render(request, "accountant_template/student_general_attendance.html")
+
+        # Retrieve attendance data for the student
+
+
+        class_attendance_present = StudentClassAttendance.objects.filter(student=student_object, status=True).count()
+        class_attendance_absent = StudentClassAttendance.objects.filter(student=student_object, status=False).count()
+        class_attendance_total = StudentClassAttendance.objects.filter(student=student_object).count()      
+      
+        total_subjects_taken = Subject.objects.all().count()
+
+       
+
+        # Pass data to the template for rendering
+        return render(
+            request,
+            "accountant_template/student_general_attendance.html",
+            {
+              
+                "class_attendance_present": class_attendance_present,
+                "class_attendance_absent": class_attendance_absent,
+                "class_attendance_total": class_attendance_total,
+                "total_subjects_taken": total_subjects_taken,
+                                 
+                "student": student_object,  # Renamed 'students' to 'student'
+            },
+        )
+
+    except Students.DoesNotExist:
+        messages.error(request, "Student does not exist.")
+        return render(request, "accountant_template/student_general_attendance.html")
+
+    except Exception as e:
+        messages.error(request, f"Error occurred: {e}")
+        return render(request, "accountant_template/student_general_attendance.html")    
+    
+def student_details(request, id):
+    student = get_object_or_404(Students, id=id)
+    return render(request, 'accountant_template/student_details.html', {'student': student})    
+
+def add_or_edit_student(request, pk=None):
+    if pk:
+        student = get_object_or_404(Students, pk=pk)
+    else:
+        student = Students()
+
+    if request.method == 'POST':
+        form = StudentForm(request.POST, request.FILES, instance=student)
+        if form.is_valid():
+            form.save()
+            action = request.POST.get('action')
+            if action == 'save':
+                return redirect('accountant_manage_student')
+            elif action == 'save_and_continue':
+                return redirect('accountant_add_student')
+    else:
+        form = StudentForm(instance=student)
+
+    return render(request, 'accountant_template/add_student.html', {'form': form, 'student': student})
+
+
+@login_required
+def manage_student(request):
+    # Get the branch of the currently logged-in staff
+    staff = request.user.staffs
+    current_branch = staff.branch
+
+    # Fetch students corresponding to the branch of the logged-in staff
+    students = Students.objects.filter(branch=current_branch)
+    
+    # Fetch all exam types
+    exam_types = ExamType.objects.all()
+
+    # Render the template with the filtered students and exam types
+    return render(request, 'accountant_template/manage_student.html', {
+        'students': students,
+        'exam_types': exam_types,
+    })
+    
+    
+def update_student_status(request):
+    try:
+        if request.method == 'POST':
+            # Get the user_id and is_active values from POST data
+            user_id = request.POST.get('user_id')
+            is_active = request.POST.get('is_active')
+
+            # Retrieve the staff object or return a 404 response if not found
+            student = get_object_or_404(Students, id=user_id)
+
+            # Toggle the is_active status based on the received value
+            if is_active == '1':
+                student.is_active = False
+            elif is_active == '0':
+                student.is_active = True
+            else:
+                messages.error(request, 'Invalid request')
+                return JsonResponse("Invalid request") # Make sure 'manage_staffs' is the name of your staff list URL
+
+            student.save()
+            messages.success(request, 'Status updated successfully')
+        else:
+            messages.error(request, 'Invalid request method')
+    except Exception as e:
+        messages.error(request, f'An error occurred: {str(e)}')
+
+    # Redirect back to the staff list page
+    return redirect('accountant_manage_student')  # Make sure 'manage_staffs' is the name of your staff list URL   
+
+ 

@@ -1,0 +1,211 @@
+{% extends 'accountant_template/base_template.html' %}
+
+{% block title %}
+    {% if student.pk %} Edit Student {% else %} Add Student {% endif %}
+{% endblock title %}
+
+{% block breadcrumb %}
+{% endblock breadcrumb %}
+
+{% block main_content %}
+    {% load static %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            {% if student.pk %} Edit Student {% else %} Add Student {% endif %}
+                        </h3>
+                    </div>
+                    <div class="container-fluid">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <!-- Student Name Section -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.first_name.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.middle_name.id_for_label }}">{{ form.middle_name.label }}</label>
+                                    {{ form.middle_name }}
+                                    {% if form.middle_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.middle_name.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.last_name.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Additional Information Section -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.class_level.id_for_label }}">{{ form.class_level.label }}</label>
+                                    {{ form.class_level }}
+                                    {% if form.class_level.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.class_level.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.date_of_birth.id_for_label }}">{{ form.date_of_birth.label }}</label>
+                                    {{ form.date_of_birth }}
+                                    {% if form.date_of_birth.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.date_of_birth.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.gender.id_for_label }}">{{ form.gender.label }}</label>
+                                    {{ form.gender }}
+                                    {% if form.gender.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.gender.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Contact Information Section -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.first_phone_number.id_for_label }}">{{ form.first_phone_number.label }}</label>
+                                    {{ form.first_phone_number }}
+                                    {% if form.first_phone_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.first_phone_number.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.second_phone_number.id_for_label }}">{{ form.second_phone_number.label }}</label>
+                                    {{ form.second_phone_number }}
+                                    {% if form.second_phone_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.second_phone_number.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.fee_payer_number.id_for_label }}">{{ form.fee_payer_number.label }}</label>
+                                    {{ form.fee_payer_number }}
+                                    {% if form.fee_payer_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.fee_payer_number.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Address and Branch Section -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
+                                    {{ form.address }}
+                                    {% if form.address.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.address.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.branch.id_for_label }}">{{ form.branch.label }}</label>
+                                    {{ form.branch }}
+                                    {% if form.branch.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.branch.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.services.id_for_label }}">{{ form.services.label }}</label>
+                                    {{ form.services }}
+                                    {% if form.services.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.services.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Profile Picture and Examination Numbers Section -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.profile_pic.id_for_label }}">{{ form.profile_pic.label }}</label>
+                                    {{ form.profile_pic }}
+                                    {% if form.profile_pic.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.profile_pic.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.examination_number.id_for_label }}">{{ form.examination_number.label }}</label>
+                                    {{ form.examination_number }}
+                                    {% if form.examination_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.examination_number.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.previously_examination_number.id_for_label }}">{{ form.previously_examination_number.label }}</label>
+                                    {{ form.previously_examination_number }}
+                                    {% if form.previously_examination_number.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.previously_examination_number.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Form Submission Section -->
+                            <div class="card-footer">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button type="submit" name="action" value="save" class="btn btn-primary btn-block">Save</button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button type="submit" name="action" value="save_and_continue" class="btn btn-secondary btn-block">Save and Add Another</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Message Display Section -->
+                            <div class="form-group mt-3">
+                                {% if messages %}
+                                    <div class="col-12">
+                                        {% for message in messages %}
+                                            {% if message.tags == 'error' %}
+                                                <div class="alert alert-danger">{{ message }}</div>
+                                            {% elif message.tags == 'success' %}
+                                                <div class="alert alert-primary">{{ message }}</div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock main_content %}
